@@ -1,0 +1,14 @@
+language: python
+dist: xenial
+sudo: True
+
+python:
+  - 3.9
+
+install:
+  - pip install pipenv
+  - pipenv sync -d
+
+script:
+  - pipenv run flake8 .
+  - pipenv run pytest
