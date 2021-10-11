@@ -1,7 +1,7 @@
 import numba
 import pytest
 import numpy as np
-from backtesting_numba.data_class import DataClass
+from backtesting_numba.data_class import DataClass, assert_numpy
 import backtesting_numba.errors as er
 
 
@@ -12,23 +12,31 @@ import backtesting_numba.errors as er
      ]
 )
 def test_open_input(open):
-    data = DataClass(open=open)
-    assert isinstance(data.open, np.ndarray)
+    data = assert_numpy(open)
+    assert isinstance(data, np.ndarray)
 
 
 @pytest.mark.parametrize(
     'open',
     [['a', 1, 2]]
 )
-def test_open_notfloats(open):
+def test_open_not_floats(open):
     with pytest.raises(er.ArrayNotFloats):
-        DataClass(open=open)
+        assert_numpy(open)
+
+
+data_sample = {
+    'date': ['2021-04-01', '2021-04-02', '2021-04-03'],
+    'open': [5.5, 6, 5.75],
+    'high': [5.8, 7, 6.75],
+    'low': [4.5, 5, 6.75],
+    'close': [5.8, 5, 6.75]
+}
 
 
 @pytest.mark.parametrize(
-    'open',
-    [[[0, 1, 2], [0, 2, 4]]]
+    'data',
+    [data_sample]
 )
-def test_open_notfloats(open):
-    with pytest.raises(er.NotOneColumn):
-        DataClass(open=open)
+def test_dict_input(data):
+    assert DataClass(data)

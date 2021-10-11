@@ -4,3 +4,7 @@ class ArrayNotFloats(Exception):
 
 class NotOneColumn(Exception):
     pass
+
+
+class MissingColumn(Exception):
+    pass
