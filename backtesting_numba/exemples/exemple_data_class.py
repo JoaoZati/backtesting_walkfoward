@@ -1,5 +1,4 @@
 from backtesting_numba.data_class import DataClass
-import pandas as pd
 
 data_sample = {
     'date': ['2021-04-01', '2021-04-02', '2021-04-03'],
