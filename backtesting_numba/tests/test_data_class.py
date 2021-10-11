@@ -47,7 +47,6 @@ data_sample_3 = {
     'Close': [5.8, 5, 6.75]
 }
 
-
 data_sample_4 = {
     'date': ['2021-04-01', '2021-04-02', '2021-04-03'],
     'open': [5.5, 5.75],
@@ -120,7 +119,7 @@ def test_numpy_date(array):
     assert isinstance(output, np.ndarray) and isinstance(output[0], np.datetime64)
 
 
-data_sample_indicators={
+data_sample_indicators = {
     'date': ['2021-04-01', '2021-04-02', '2021-04-03'],
     'open': [5.5, 6, 5.75],
     'high': [5.8, 7, 6.75],
@@ -137,3 +136,24 @@ data_sample_indicators={
 def test_dataclass_indicators(data_input):
     data = DataClass(data_input, with_indicators=True)
     assert isinstance(data.indicators['ma25'], np.ndarray)
+
+
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_indicators]
+)
+def test_dataclass_update_indicator(data_input):
+    data = DataClass(data_input, with_indicators=True)
+    indicators = {
+        'ma25': [8, 8.25, 8.55],
+        'ma50': [9, 9.25, 9.55]
+    }
+    bool_assert = True
+    for key, value in indicators.items():
+        data.add_update_indicator(key, value)
+        print(data.indicators[key])
+        for i, item in enumerate(value):
+            if not data.indicators[key][i] == item:
+                bool_assert = False
+
+    assert bool_assert

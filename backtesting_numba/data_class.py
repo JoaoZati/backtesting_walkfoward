@@ -87,8 +87,8 @@ class DataClass:
                 exclude_columns = self._columns_index_true
             data_indicators = data_input.loc[:, [i for i in list(data_input.columns) if i not in exclude_columns]]
 
-        for column in data_indicators.columns:
-            self.indicators[column] = assert_numpy_elements(data_indicators[column])
+            for column in data_indicators.columns:
+                self.indicators[column] = assert_numpy_elements(data_indicators[column])
 
     def update_dict_candle(self):
         self._dict_candle = {
@@ -98,6 +98,9 @@ class DataClass:
             'close': self.close,
         }
 
+    def add_update_indicator(self, name: str, indicator):
+        if not isinstance(name, str):
+            print('name must be a string')
+            raise ValueError
 
-if __name__ == '__main__':
-    data = DataClass(open=[0, 1, 2])
+        self.indicators[name] = assert_numpy_elements(indicator)
