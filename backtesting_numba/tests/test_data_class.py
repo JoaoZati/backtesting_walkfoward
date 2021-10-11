@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from backtesting_numba.data_class import DataClass, assert_numpy_candles, assert_numpy_date
+from backtesting_numba.data_class import DataClass, assert_numpy_elements, assert_numpy_date
 import backtesting_numba.errors as er
 
 
@@ -11,7 +11,7 @@ import backtesting_numba.errors as er
      ]
 )
 def test_open_input(open):
-    data = assert_numpy_candles(open)
+    data = assert_numpy_elements(open)
     assert isinstance(data, np.ndarray)
 
 
@@ -21,7 +21,7 @@ def test_open_input(open):
 )
 def test_open_not_floats(open):
     with pytest.raises(er.ArrayNotFloats):
-        assert_numpy_candles(open)
+        assert_numpy_elements(open)
 
 
 data_sample = {
@@ -48,12 +48,30 @@ data_sample_3 = {
 }
 
 
+data_sample_4 = {
+    'date': ['2021-04-01', '2021-04-02', '2021-04-03'],
+    'open': [5.5, 5.75],
+    'high': [5.8, 7, 6.75],
+    'low': [4.5, 5, 6.75],
+    'close': [5.8, 5]
+}
+
+
 @pytest.mark.parametrize(
     'data',
     [data_sample]
 )
 def test_dict_input(data):
     assert DataClass(data)
+
+
+@pytest.mark.parametrize(
+    'data',
+    [data_sample_4]
+)
+def test_dict_input_dropna(data):
+    with pytest.raises(ValueError):
+        data = DataClass(data)
 
 
 @pytest.mark.parametrize(
@@ -100,3 +118,22 @@ def test_numpy_date(array):
     output = assert_numpy_date(array)
     print(output.dtype)
     assert isinstance(output, np.ndarray) and isinstance(output[0], np.datetime64)
+
+
+data_sample_indicators={
+    'date': ['2021-04-01', '2021-04-02', '2021-04-03'],
+    'open': [5.5, 6, 5.75],
+    'high': [5.8, 7, 6.75],
+    'low': [4.5, 5, 4.75],
+    'close': [5.8, 5, 5.8],
+    'ma25': [7, 7.25, 6.55]
+}
+
+
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_indicators]
+)
+def test_dataclass_indicators(data_input):
+    data = DataClass(data_input, with_indicators=True)
+    assert isinstance(data.indicators['ma25'], np.ndarray)
