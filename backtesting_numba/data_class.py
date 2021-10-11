@@ -68,6 +68,7 @@ class DataClass:
         self.high = assert_numpy_elements(data_input.high)
         self.low = assert_numpy_elements(data_input.low)
         self.close = assert_numpy_elements(data_input.close)
+
         self._dict_candle = {
             'open': self.open,
             'high': self.high,
@@ -89,6 +90,22 @@ class DataClass:
 
             for column in data_indicators.columns:
                 self.indicators[column] = assert_numpy_elements(data_indicators[column])
+
+        self._set_dataframe()
+
+    def _set_dataframe(self):
+        dict_dataframe = {
+            'date': self.date,
+            'open': self.open,
+            'high': self.high,
+            'low': self.low,
+            'close': self.close,
+        }
+
+        self.dataframe = pd.DataFrame(dict_dataframe)
+
+        for key, value in self.indicators.items():
+            self.dataframe[key] = value
 
     def update_dict_candle(self):
         self._dict_candle = {

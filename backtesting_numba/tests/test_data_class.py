@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from backtesting_numba.data_class import DataClass, assert_numpy_elements, assert_numpy_date
 import backtesting_numba.errors as er
+import pandas as pd
 
 
 @pytest.mark.parametrize(
@@ -157,3 +158,27 @@ def test_dataclass_update_indicator(data_input):
                 bool_assert = False
 
     assert bool_assert
+
+
+data_sample_indicators_2 = {
+    'date': ['2021-04-01', '2021-04-02', '2021-04-03'],
+    'open': [5.5, 6, 5.75],
+    'high': [5.8, 7, 6.75],
+    'low': [4.5, 5, 4.75],
+    'close': [5.8, 5, 5.8],
+    'ma25': [7, 7.25, 6.55],
+    'renko': [9, 9.25, 5.55]
+}
+
+
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_indicators_2]
+)
+def test_dataclass_dataframe(data_input):
+    data = DataClass(data_input, with_indicators=True)
+    bool_assert = True
+    for key in data_input.keys():
+        if key not in data.dataframe.columns:
+            bool_assert == False
+    assert isinstance(data.dataframe, pd.DataFrame) and bool_assert
