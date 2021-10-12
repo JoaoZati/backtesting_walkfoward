@@ -9,6 +9,7 @@ pandas = "*"
 numpy = "*"
 numba = "*"
 yfinance = "*"
+alpha-vantage = "*"
 
 [dev-packages]
 flake8 = "*"

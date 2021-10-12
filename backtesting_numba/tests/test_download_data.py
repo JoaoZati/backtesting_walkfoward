@@ -16,7 +16,7 @@ class MockDownload(dd.DownloadData):
         return 1
 
     def get_alphavantage_data(self):
-        return 2
+        return 2, 1
 
 
 ticker = 'MSFT'

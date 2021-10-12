@@ -1,13 +1,15 @@
 import pandas as pd
 import datetime as dt
 import backtesting_numba.errors as er
-# import yfinance as yf
+import yfinance as yf
+from alpha_vantage.timeseries import TimeSeries
 
 
 class DownloadData:
     _list_sites_scrapy = ['yfinance', 'alphavantage']
     _list_sizes_alphavantage = ['full', 'compact']
     dataframe = None
+    metadata = None
 
     def __init__(self, ticker, start_date=dt.datetime.now() - dt.timedelta(3600), end_date=dt.datetime.now(),
                  site_scrapy='yfinance', timeframe='1d', size='full',
@@ -58,11 +60,31 @@ class DownloadData:
             self.dataframe = self.get_yfinance_data()
 
         if self.site_scrapy == 'alphavantage':
-            self.dataframe = self.get_alphavantage_data()
+            self.dataframe, self.metada = self.get_alphavantage_data()
 
     def get_yfinance_data(self):
-        # dataframe = yf.download(ticker, td_start, td_end, interval=st_interval)
-        pass
+        try:
+            dataframe = yf.download(self.ticker, self.start_date, self.end_date, interval=self.timeframe)
+            dataframe.dropna(inplace=True)
+            dataframe.reset_index(inplace=True)
+            dataframe.columns = [column.lower() for column in dataframe.columns]
+        except Exception as e:
+            raise e
+
+        return dataframe
 
     def get_alphavantage_data(self):
-        pass
+        try:
+            key = open(self.key_path, 'r').read()
+            ts = TimeSeries(key=key, output_format='pandas')
+
+            if self.dataframe == '1d':
+                dataframe, meta_data = ts.get_daily(self.ticker, outputsize=self.size)
+
+            dataframe.dropna(inplace=True)
+            dataframe.sort_index(ascending=True, inplace=True)
+            dataframe.reset_index(inplace=True)
+        except Exception as e:
+            raise e
+
+        return dataframe
