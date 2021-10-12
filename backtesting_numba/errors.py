@@ -8,3 +8,11 @@ class NotOneColumn(Exception):
 
 class MissingColumn(Exception):
     pass
+
+
+class EndDateBeforeStartDate(Exception):
+    pass
+
+
+class NotinList(Exception):
+    pass
