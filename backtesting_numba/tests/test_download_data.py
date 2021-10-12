@@ -28,7 +28,7 @@ def test_datetime_istance():
 
 def test_datetime_after():
     with pytest.raises(er.EndDateBeforeStartDate):
-        mock_data = MockDownload(start_date=dt.datetime.now(), end_date=dt.datetime.now() - dt.timedelta(100))
+        MockDownload(start_date=dt.datetime.now(), end_date=dt.datetime.now() - dt.timedelta(100))
 
 
 list_site_scrapy = ['yfinance', 'alphavantage']
@@ -50,7 +50,7 @@ def test_site_scrapy(site_scrapy):
 )
 def test_site_scrapy_wrong(site_scrapy):
     with pytest.raises(er.NotinList):
-        mock_data = MockDownload(site_scrapy=site_scrapy)
+        MockDownload(site_scrapy=site_scrapy)
 
 
 list_size = ['full', 'compact']
@@ -72,7 +72,7 @@ def test_size(size):
 )
 def test_size_wrong(size):
     with pytest.raises(er.NotinList):
-        mock_data = MockDownload(size=size)
+        MockDownload(size=size)
 
 
 list_key_path = ['/home/joao', '']
@@ -94,4 +94,4 @@ def test_key_path(key_path):
 )
 def test_key_path_wrong(key_path):
     with pytest.raises(ValueError):
-        mock_data = MockDownload(key_path=key_path)
+        MockDownload(key_path=key_path)

@@ -180,5 +180,5 @@ def test_dataclass_dataframe(data_input):
     bool_assert = True
     for key in data_input.keys():
         if key not in data.dataframe.columns:
-            bool_assert == False
+            bool_assert = False
     assert isinstance(data.dataframe, pd.DataFrame) and bool_assert
