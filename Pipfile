@@ -8,6 +8,7 @@ ipython = "*"
 pandas = "*"
 numpy = "*"
 numba = "*"
+yfinance = "*"
 
 [dev-packages]
 flake8 = "*"

@@ -5,10 +5,10 @@ import backtesting_numba.errors as er
 
 
 class MockDownload(dd.DownloadData):
-    def __init__(self, start_date=dt.datetime.now() - dt.timedelta(3600), end_date=dt.datetime.now(),
+    def __init__(self, ticker, start_date=dt.datetime.now() - dt.timedelta(3600), end_date=dt.datetime.now(),
                  site_scrapy='yfinance', timeframe='1d', size='full',
                  key_path=''):
-        super().__init__(start_date, end_date,
+        super().__init__(ticker, start_date, end_date,
                          site_scrapy, timeframe, size,
                          key_path)
 
@@ -19,8 +19,31 @@ class MockDownload(dd.DownloadData):
         return 2
 
 
+ticker = 'MSFT'
+list_ticker = ['MSFT', 'AAPL']
+list_ticker_wrong = [0, True]
+
+
+@pytest.mark.parametrize(
+    'ticker',
+    list_ticker
+)
+def test_ticker(ticker):
+    mock_data = MockDownload(ticker=ticker)
+    assert mock_data.ticker == ticker
+
+
+@pytest.mark.parametrize(
+    'ticker',
+    list_ticker_wrong
+)
+def test_ticker_wrong(ticker):
+    with pytest.raises(ValueError):
+        MockDownload(ticker=ticker)
+
+
 def test_datetime_istance():
-    mock_data = MockDownload()
+    mock_data = MockDownload(ticker)
     print(mock_data.start_date)
     assert isinstance(mock_data.start_date, dt.datetime) and \
            isinstance(mock_data.end_date, dt.datetime)
@@ -28,7 +51,7 @@ def test_datetime_istance():
 
 def test_datetime_after():
     with pytest.raises(er.EndDateBeforeStartDate):
-        MockDownload(start_date=dt.datetime.now(), end_date=dt.datetime.now() - dt.timedelta(100))
+        MockDownload(ticker, start_date=dt.datetime.now(), end_date=dt.datetime.now() - dt.timedelta(100))
 
 
 list_site_scrapy = ['yfinance', 'alphavantage']
@@ -40,7 +63,7 @@ list_site_scrapy_wrong = ['yfinancee', 'alphavantagee']
     list_site_scrapy
 )
 def test_site_scrapy(site_scrapy):
-    mock_data = MockDownload(site_scrapy=site_scrapy)
+    mock_data = MockDownload(ticker, site_scrapy=site_scrapy)
     assert mock_data.site_scrapy == site_scrapy
 
 
@@ -50,7 +73,7 @@ def test_site_scrapy(site_scrapy):
 )
 def test_site_scrapy_wrong(site_scrapy):
     with pytest.raises(er.NotinList):
-        MockDownload(site_scrapy=site_scrapy)
+        MockDownload(ticker, site_scrapy=site_scrapy)
 
 
 list_size = ['full', 'compact']
@@ -62,7 +85,7 @@ list_size_wrong = ['fulll', 1]
     list_size
 )
 def test_size(size):
-    mock_data = MockDownload(size=size)
+    mock_data = MockDownload(ticker, size=size)
     assert mock_data.size == size
 
 
@@ -72,7 +95,7 @@ def test_size(size):
 )
 def test_size_wrong(size):
     with pytest.raises(er.NotinList):
-        MockDownload(size=size)
+        MockDownload(ticker, size=size)
 
 
 list_key_path = ['/home/joao', '']
@@ -84,7 +107,7 @@ list_key_path_wrong = [15, True]
     list_key_path
 )
 def test_key_path(key_path):
-    mock_data = MockDownload(key_path=key_path)
+    mock_data = MockDownload(ticker, key_path=key_path)
     assert mock_data.key_path == key_path
 
 
@@ -94,4 +117,4 @@ def test_key_path(key_path):
 )
 def test_key_path_wrong(key_path):
     with pytest.raises(ValueError):
-        MockDownload(key_path=key_path)
+        MockDownload(ticker, key_path=key_path)
