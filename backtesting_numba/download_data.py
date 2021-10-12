@@ -1,7 +1,7 @@
 import pandas as pd
 import datetime as dt
 import backtesting_numba.errors as er
-import yfinance as yf
+# import yfinance as yf
 
 
 class DownloadData:
@@ -61,7 +61,8 @@ class DownloadData:
             self.dataframe = self.get_alphavantage_data()
 
     def get_yfinance_data(self):
-        dataframe = yf.download(ticker, td_start, td_end, interval=st_interval)
+        # dataframe = yf.download(ticker, td_start, td_end, interval=st_interval)
+        pass
 
     def get_alphavantage_data(self):
         pass
