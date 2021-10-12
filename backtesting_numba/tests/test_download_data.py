@@ -118,3 +118,25 @@ def test_key_path(key_path):
 def test_key_path_wrong(key_path):
     with pytest.raises(ValueError):
         MockDownload(ticker, key_path=key_path)
+
+
+list_timeframe = ['1d']
+list_timeframe_wrong = ['5d']
+
+
+@pytest.mark.parametrize(
+    'timeframe',
+    list_timeframe
+)
+def test_timeframe(timeframe):
+    mock_data = MockDownload(ticker, timeframe=timeframe)
+    assert mock_data.timeframe == timeframe
+
+
+@pytest.mark.parametrize(
+    'timeframe',
+    list_timeframe_wrong
+)
+def test_timeframe_wrong(timeframe):
+    with pytest.raises(er.NotinList):
+        MockDownload(ticker, site_scrapy='alphavantage', timeframe=timeframe)

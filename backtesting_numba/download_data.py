@@ -8,6 +8,7 @@ from alpha_vantage.timeseries import TimeSeries
 class DownloadData:
     _list_sites_scrapy = ['yfinance', 'alphavantage']
     _list_sizes_alphavantage = ['full', 'compact']
+    _list_timeframes_alphavantage = ['1d']
     dataframe = None
     metadata = None
 
@@ -48,6 +49,11 @@ class DownloadData:
             print('key_path should be a str with path of key directory')
             raise ValueError
 
+        if site_scrapy == 'alphavantage' and timeframe not in self._list_timeframes_alphavantage:
+            print('timeframe in alphavantage must be a str and be one of these values')
+            print(self._list_sizes_alphavantage)
+            raise er.NotinList
+
         self.ticker = ticker
         self.start_date = start_date
         self.end_date = end_date
@@ -78,13 +84,15 @@ class DownloadData:
             key = open(self.key_path, 'r').read()
             ts = TimeSeries(key=key, output_format='pandas')
 
-            if self.dataframe == '1d':
+            if self.timeframe == '1d':
                 dataframe, meta_data = ts.get_daily(self.ticker, outputsize=self.size)
 
             dataframe.dropna(inplace=True)
             dataframe.sort_index(ascending=True, inplace=True)
             dataframe.reset_index(inplace=True)
+            dataframe.columns = [column.lower() for column in dataframe.columns]
+            dataframe.columns = [column[3:] if item > 0 else column for item, column in enumerate(dataframe.columns)]
         except Exception as e:
             raise e
 
-        return dataframe
+        return dataframe, meta_data

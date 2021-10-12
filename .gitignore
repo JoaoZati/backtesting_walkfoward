@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# my api file
+backtesting_numba/exemples/api_file.txt
