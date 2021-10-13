@@ -1,4 +1,4 @@
-# from backtesting_numba.backtesting import Backtesting
+from backtesting_numba.backtesting import Backtesting
 from backtesting_numba.data_class import DataClass
 import pandas as pd
 import pytest
@@ -23,3 +23,9 @@ def dataclass_aapl(dataframe_aapl):
 
 def test_dataclass_aapl(dataclass_aapl):
     assert dataclass_aapl
+
+
+def test_backtesting_init(dataclass_aapl, dataframe_aapl):
+    back_aapl_1 = Backtesting(dataclass_aapl)
+    back_aapl_2 = Backtesting(dataframe_aapl)
+    assert isinstance(back_aapl_1.data_class, DataClass) and isinstance(back_aapl_2.data_class, DataClass)
