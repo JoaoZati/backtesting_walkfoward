@@ -12,6 +12,14 @@ def timeit(func):
     return timebegend
 
 
+def numba_indicator_ohlc(func):
+    def init(*args, **kwargs):
+        value = func(*args, **kwargs)
+        return value
+
+    return init
+
+
 if __name__ == '__main__':
     @timeit
     def calculate_number(number):

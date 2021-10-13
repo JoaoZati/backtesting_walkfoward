@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # my api file
-backtesting_numba/exemples/api_file.txt
+backtesting_numba/exemples/exemples_dowload_data/api_file.txt

@@ -7,11 +7,11 @@ try:
 except Exception:
     pass
 
-path = '../sample_data/AAPL.csv'
+path = '../../sample_data/AAPL.csv'
 df_aapl = pd.read_csv(path)
 sr_volume = df_aapl.volume
 
 dataclass_aapl = DataClass(df_aapl)
 dataclass_aapl.add_update_indicator('volume', sr_volume)
 
-print(dataclass_aapl.dataframe)
+dataclass_aapl.plot_bokeh_ohlcv(title='Apple')
