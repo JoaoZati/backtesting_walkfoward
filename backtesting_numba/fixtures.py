@@ -1,4 +1,5 @@
 import time
+from numba import njit
 
 
 def timeit(func):
@@ -12,9 +13,24 @@ def timeit(func):
     return timebegend
 
 
-def numba_indicator_ohlc(func):
-    def init(*args, **kwargs):
-        value = func(*args, **kwargs)
+def numba_njit_ohlc(func):
+    def init(dataclass, *args, **kwargs):
+        open = dataclass.open
+        high = dataclass.high
+        low = dataclass.low
+        close = dataclass.close
+        value = njit(func(open, high, low, close, *args, **kwargs))
+        return value
+
+    return init
+
+
+def add1_a(func):
+    def init(a, *args, **kwargs):
+        print(a)
+        a += 1
+        print(a)
+        value = func(a, *args, **kwargs)
         return value
 
     return init
@@ -26,3 +42,9 @@ if __name__ == '__main__':
         time.sleep(number)
 
     calculate_number(5)
+
+    @add1_a
+    def soma(a, b, c):
+        return a + b + c
+
+    print(soma(1, 2, 3))
