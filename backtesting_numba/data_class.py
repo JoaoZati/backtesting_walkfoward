@@ -135,6 +135,9 @@ class DataClass:
             raise e
 
     def plot_bokeh_ohlcv(self, title=''):
+        if 'volume' not in self.dataframe.columns:
+            print('No volume in dataframe for plot open, high, low, close, volume')
+            raise er.NoVolumeInDataframe
         try:
             self.p, self.pv = bk.bokeh_df(self.dataframe, title)
             bk.bokeh_gridplot(self.p, self.pv)

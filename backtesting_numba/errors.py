@@ -16,3 +16,7 @@ class EndDateBeforeStartDate(Exception):
 
 class NotinList(Exception):
     pass
+
+
+class NoVolumeInDataframe(Exception):
+    pass

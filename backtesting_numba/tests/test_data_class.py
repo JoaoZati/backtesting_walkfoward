@@ -3,6 +3,27 @@ import numpy as np
 from backtesting_numba.data_class import DataClass, assert_numpy_elements, assert_numpy_date
 import backtesting_numba.errors as er
 import pandas as pd
+import backtesting_numba.bokeh_plot as bk
+
+
+class MockDataClass(DataClass):
+    def __init__(self, data_input, index_date=False, with_indicators=False):
+        super().__init__(data_input, index_date=index_date, with_indicators=with_indicators)
+
+    def plot_bokeh_ohlc(self, title=''):
+        try:
+            self.p, self.pv = bk.bokeh_df(self.dataframe, title)
+        except Exception as e:
+            raise e
+
+    def plot_bokeh_ohlcv(self, title=''):
+        if 'volume' not in self.dataframe.columns:
+            print('No volume in dataframe for plot open, high, low, close, volume')
+            raise er.NoVolumeInDataframe
+        try:
+            self.p, self.pv = bk.bokeh_df(self.dataframe, title)
+        except Exception as e:
+            raise e
 
 
 @pytest.mark.parametrize(
@@ -182,3 +203,43 @@ def test_dataclass_dataframe(data_input):
         if key not in data.dataframe.columns:
             bool_assert = False
     assert isinstance(data.dataframe, pd.DataFrame) and bool_assert
+
+
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_indicators_2]
+)
+def test_dataclass_plot_ohlc(data_input):
+    data = MockDataClass(data_input)
+    data.plot_bokeh_ohlc()
+    assert data.p and data.pv
+
+
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_indicators_2]
+)
+def test_dataclass_plot_ohlcv(data_input):
+    with pytest.raises(er.NoVolumeInDataframe):
+        data = DataClass(data_input)
+        data.plot_bokeh_ohlcv()
+
+
+data_sample_volume = {
+    'date': ['2021-04-01', '2021-04-02', '2021-04-03'],
+    'open': [5.5, 6, 5.75],
+    'high': [5.8, 7, 6.75],
+    'low': [4.5, 5, 4.75],
+    'close': [5.8, 5, 5.8],
+    'volume': [2000, 3000, 1500]
+}
+
+
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_volume]
+)
+def test_dataclass_plot_ohlcv_ok(data_input):
+    with pytest.raises(er.NoVolumeInDataframe):
+        data = MockDataClass(data_input)
+        data.plot_bokeh_ohlcv()
