@@ -121,3 +121,4 @@ class DataClass:
             raise ValueError
 
         self.indicators[name] = assert_numpy_elements(indicator)
+        self._set_dataframe()
