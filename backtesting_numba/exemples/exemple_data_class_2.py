@@ -13,3 +13,5 @@ sr_volume = df_aapl.volume
 
 dataclass_aapl = DataClass(df_aapl)
 dataclass_aapl.add_update_indicator('volume', sr_volume)
+
+print(dataclass_aapl.dataframe)

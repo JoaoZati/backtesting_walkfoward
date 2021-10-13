@@ -10,6 +10,7 @@ numpy = "*"
 numba = "*"
 yfinance = "*"
 alpha-vantage = "*"
+bokeh = "*"
 
 [dev-packages]
 flake8 = "*"
