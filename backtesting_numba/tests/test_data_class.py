@@ -243,3 +243,33 @@ def test_dataclass_plot_ohlcv_ok(data_input):
     with pytest.raises(er.NoVolumeInDataframe):
         data = MockDataClass(data_input)
         data.plot_bokeh_ohlcv()
+
+
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_volume]
+)
+def test_dataclass_delete_indicator(data_input):
+    data = DataClass(data_input, with_indicators=True)
+    data.delete_indicator('volume')
+    assert 'volume' not in data.dataframe.columns
+
+
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_volume]
+)
+def test_dataclass_delete_nostring(data_input):
+    with pytest.raises(ValueError):
+        data = DataClass(data_input)
+        data.delete_indicator(50)
+
+
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_volume]
+)
+def test_dataclass_delete_noindicator(data_input):
+    with pytest.raises(ValueError):
+        data = DataClass(data_input)
+        data.delete_indicator('volume1')

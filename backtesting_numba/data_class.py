@@ -132,6 +132,18 @@ class DataClass:
         self.indicators[name] = assert_numpy_elements(indicator)
         self._set_dataframe()
 
+    def delete_indicator(self, key: str):
+        if not isinstance(key, str):
+            print('name must be a string')
+            raise ValueError
+
+        if key not in self.indicators.keys():
+            print('key not found in indicators')
+            raise ValueError
+
+        self.indicators.pop(key)
+        self._set_dataframe()
+
     def plot_bokeh_ohlc(self, title=''):
         try:
             self.p, self.pv = bk.bokeh_df(self.dataframe, title)
