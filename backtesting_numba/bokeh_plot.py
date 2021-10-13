@@ -1,5 +1,5 @@
-from bokeh.plotting import figure, output_file, show, ColumnDataSource
-from bokeh.models import Span, CrosshairTool, HoverTool, ResetTool, PanTool, WheelZoomTool, BoxZoomTool, SaveTool
+from bokeh.plotting import figure, show, ColumnDataSource
+from bokeh.models import CrosshairTool, HoverTool, ResetTool, PanTool, WheelZoomTool, BoxZoomTool, SaveTool
 from bokeh.layouts import gridplot
 
 import pandas as pd

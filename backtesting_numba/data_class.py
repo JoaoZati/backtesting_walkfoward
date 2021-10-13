@@ -1,6 +1,8 @@
 import numpy as np
 import backtesting_numba.errors as er
 import pandas as pd
+import backtesting_numba.bokeh_plot as bk
+from bokeh.plotting import show
 
 
 def assert_numpy_date(elements):
@@ -39,6 +41,8 @@ class DataClass:
 
     All NaN values are dropped.
     """
+
+    p, pv = [None]*2
 
     def __init__(self, data_input, index_date=False, with_indicators=False):
 
@@ -122,3 +126,17 @@ class DataClass:
 
         self.indicators[name] = assert_numpy_elements(indicator)
         self._set_dataframe()
+
+    def plot_bokeh_ohlc(self, title=''):
+        try:
+            self.p, self.pv = bk.bokeh_df(self.dataframe, title)
+            show(self.p)
+        except Exception as e:
+            raise e
+
+    def plot_bokeh_ohlcv(self, title=''):
+        try:
+            self.p, self.pv = bk.bokeh_df(self.dataframe, title)
+            bk.bokeh_gridplot(self.p, self.pv)
+        except Exception as e:
+            raise e
