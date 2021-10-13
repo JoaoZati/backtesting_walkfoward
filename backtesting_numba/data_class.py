@@ -30,21 +30,26 @@ def assert_numpy_elements(element):
 
 class DataClass:
     """
-    Class used as data in the backtesting process
-
-    :arg data_input: a dataframe, dictionary or instance that can be converted in dataframe with columns:
-    date (datetime),
-    open (int or float),
-    high (int or float),
-    low (int or float),
-    close (int or float).
-
-    All NaN values are dropped.
+    Class used as data in the backtesting process.
+    The main reason for use this class and don't use dataframe instead in backtesting
+    is because this class handle all the filters for the calculations and numba does not works well with pandas.,
+    Its simple to works only with numpy arrays.
     """
 
     p, pv = [None]*2
 
     def __init__(self, data_input, index_date=False, with_indicators=False):
+        """
+
+        :param data_input: a dataframe, dictionary or instance that can be converted in dataframe with columns:
+        date (datetime),
+        open (int or float),
+        high (int or float),
+        low (int or float),
+        close (int or float).
+        :param index_date: if your date is as index
+        :param with_indicators:
+        """
 
         self._columns_index_false = ['date', 'open', 'high', 'low', 'close']
         self._columns_index_true = ['open', 'high', 'low', 'close']
