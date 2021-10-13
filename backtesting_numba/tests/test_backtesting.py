@@ -8,7 +8,7 @@ import pytest
 def dataframe_aapl():
     try:
         dataframe = pd.read_csv('../sample_data/AAPL.csv')
-    except:
+    except Exception:
         dataframe = pd.read_csv('backtesting_numba/sample_data/AAPL.csv')
 
     return dataframe
