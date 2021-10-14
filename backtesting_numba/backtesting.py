@@ -40,3 +40,17 @@ class Backtesting:
             self.data_class._set_buy_close(buy_close)
         except Exception as e:
             raise e
+
+    def sell_enter(self, func, *args):
+        try:
+            sell_enter = func(self.data_class, *args)
+            self.data_class._set_sell_enter(sell_enter)
+        except Exception as e:
+            raise e
+
+    def sell_close(self, func, *args):
+        try:
+            sell_close = func(self.data_class, *args)
+            self.data_class._set_sell_close(sell_close)
+        except Exception as e:
+            raise e
