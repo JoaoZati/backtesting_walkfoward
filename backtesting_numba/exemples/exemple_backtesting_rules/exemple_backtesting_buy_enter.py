@@ -5,18 +5,6 @@ from backtesting_numba.exemples.exemple_numba.exemple_numba import moving_avaran
 from numba import njit
 import numpy as np
 
-try:
-    os.chdir('backtesting_numba/exemples/exemple_backtesting_rules')
-    print('ok')
-except Exception:
-    pass
-
-path = '../../sample_data/AAPL.csv'
-df_aapl = pd.read_csv(path)
-
-backtesting = Backtesting(df_aapl)
-backtesting.indicator(moving_avarange_df, 20, 120)
-
 
 @njit(parallel=True)
 def buy_enter_crossover_njit(mf, ms, op):
@@ -42,5 +30,18 @@ def buy_enter_crossover(dataclass):
     return buy_enter
 
 
-backtesting.buy_enter(buy_enter_crossover)
-print(backtesting.data_class.buy_enter)
+if __name__ == '__main__':
+    try:
+        os.chdir('backtesting_numba/exemples/exemple_backtesting_rules')
+        print('ok')
+    except Exception:
+        pass
+
+    path = '../../sample_data/AAPL.csv'
+    df_aapl = pd.read_csv(path)
+
+    backtesting = Backtesting(df_aapl)
+    backtesting.indicator(moving_avarange_df, 20, 120)
+
+    backtesting.buy_enter(buy_enter_crossover)
+    print(backtesting.data_class.buy_enter)

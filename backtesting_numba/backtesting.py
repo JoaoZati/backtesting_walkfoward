@@ -19,38 +19,38 @@ class Backtesting:
 
         self.data_class = data_class
 
-    def indicator(self, func, *args):
+    def indicator(self, func, *args, **kwargs):
         try:
-            indicators = func(self.data_class, *args)
+            indicators = func(self.data_class, *args, **kwargs)
             for key, value in indicators.items():
                 self.data_class.add_update_indicator(key, value)
         except Exception as e:
             raise e
 
-    def buy_enter(self, func, *args):
+    def buy_enter(self, func, *args, **kwargs):
         try:
-            buy_enter = func(self.data_class, *args)
+            buy_enter = func(self.data_class, *args, **kwargs)
             self.data_class._set_buy_enter(buy_enter)
         except Exception as e:
             raise e
 
-    def buy_close(self, func, *args):
+    def buy_close(self, func, *args, **kwargs):
         try:
-            buy_close = func(self.data_class, *args)
+            buy_close = func(self.data_class, *args, **kwargs)
             self.data_class._set_buy_close(buy_close)
         except Exception as e:
             raise e
 
-    def sell_enter(self, func, *args):
+    def sell_enter(self, func, *args, **kwargs):
         try:
-            sell_enter = func(self.data_class, *args)
+            sell_enter = func(self.data_class, *args, **kwargs)
             self.data_class._set_sell_enter(sell_enter)
         except Exception as e:
             raise e
 
-    def sell_close(self, func, *args):
+    def sell_close(self, func, *args, **kwargs):
         try:
-            sell_close = func(self.data_class, *args)
+            sell_close = func(self.data_class, *args, **kwargs)
             self.data_class._set_sell_close(sell_close)
         except Exception as e:
             raise e
