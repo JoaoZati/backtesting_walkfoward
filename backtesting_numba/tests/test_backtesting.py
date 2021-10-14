@@ -6,6 +6,8 @@ import pytest
 import backtesting_numba.sample_indicators as ind
 import backtesting_numba.sample_rules.buy_entry as ber
 import backtesting_numba.sample_rules.sell_entry as ser
+import backtesting_numba.sample_rules.buy_close as bcr
+import backtesting_numba.sample_rules.sell_close as scr
 
 
 @pytest.fixture
@@ -59,3 +61,30 @@ def test_sell_enter(backtesting_aapl):
 
     backtesting_aapl.sell_enter(ser.sell_enter_crossover, 'ma_fast', 'ma_slow')
     assert isinstance(backtesting_aapl.data_class.sell_enter, np.ndarray)
+
+
+@pytest.fixture
+def backtesting_entrys(backtesting_aapl):
+    backtesting_aapl.indicator(ind.moving_avarange_df, 20, name='ma_fast')
+    backtesting_aapl.indicator(ind.moving_avarange_df, 120, name='ma_slow')
+
+    backtesting_aapl.buy_enter(ber.buy_enter_crossover, 'ma_fast', 'ma_slow')
+    backtesting_aapl.sell_enter(ser.sell_enter_crossover, 'ma_fast', 'ma_slow')
+
+    return backtesting_aapl
+
+
+def test_backtesting_entrys(backtesting_entrys):
+    assert backtesting_entrys
+
+
+def test_backtesting_buy_close(backtesting_entrys):
+    backtesting_entrys.buy_close(bcr.buy_close_after_x, 10)
+
+    assert isinstance(backtesting_entrys.data_class.buy_close, np.ndarray)
+
+
+def test_backtesting_sell_close(backtesting_entrys):
+    backtesting_entrys.sell_close(scr.sell_close_after_x, 10)
+
+    assert isinstance(backtesting_entrys.data_class.sell_close, np.ndarray)
