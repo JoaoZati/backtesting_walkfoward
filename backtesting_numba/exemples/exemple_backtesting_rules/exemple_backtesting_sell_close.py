@@ -69,7 +69,6 @@ if __name__ == '__main__':
     backtesting.indicator(moving_avarange_df, 20, 120)
 
     backtesting.sell_enter(sell_enter_crossover)
-    print(backtesting.data_class.buy_enter)
 
     backtesting.sell_close(sell_close_after_x, 10)
 
