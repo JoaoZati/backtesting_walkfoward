@@ -126,7 +126,7 @@ class DataClass:
 
     def add_update_indicator(self, name: str, indicator):
         if not isinstance(name, str):
-            print('name must be a string')
+            print(f'The name imput: {name} must be a string')
             raise ValueError
 
         self.indicators[name] = assert_numpy_elements(indicator)

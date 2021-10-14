@@ -1,8 +1,12 @@
 from backtesting_numba.data_class import DataClass
+import numpy as np
+
+
 # import pandas as pd
 
 
 class Backtesting:
+
     def __init__(self, data_class, index_date=False, with_indicators=False):
         """
         :param data_class: DataClass object
@@ -16,3 +20,11 @@ class Backtesting:
                 raise e
 
         self.data_class = data_class
+
+    def indicator(self, func, *args):
+        try:
+            indicators = func(self.data_class, *args)
+            for key, value in indicators.items():
+                self.data_class.add_update_indicator(key, value)
+        except Exception as e:
+            raise e
