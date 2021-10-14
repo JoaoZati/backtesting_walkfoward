@@ -37,6 +37,7 @@ class DataClass:
     """
 
     p, pv = [None]*2
+    buy_enter, buy_close, sell_enter, sell_close = [None]*4
 
     def __init__(self, data_input, index_date=False, with_indicators=False):
         """
@@ -116,6 +117,18 @@ class DataClass:
         for key, value in self.indicators.items():
             self.dataframe[key] = value
 
+        if self.buy_enter is not None:
+            self.dataframe['buy_enter'] = self.buy_enter
+
+        if self.buy_close is not None:
+            self.dataframe['buy_close'] = self.buy_close
+
+        if self.sell_enter is not None:
+            self.dataframe['sell_enter'] = self.sell_enter
+
+        if self.sell_close is not None:
+            self.dataframe['sell_close'] = self.sell_close
+
     def update_dict_candle(self):
         self._dict_candle = {
             'open': self.open,
@@ -127,6 +140,10 @@ class DataClass:
     def add_update_indicator(self, name: str, indicator):
         if not isinstance(name, str):
             print(f'The name imput: {name} must be a string')
+            raise ValueError
+
+        if len(indicator) != len(self.dataframe):
+            print(f'The len of {name} indicator is different of dataframe')
             raise ValueError
 
         self.indicators[name] = assert_numpy_elements(indicator)
@@ -160,3 +177,19 @@ class DataClass:
             bk.bokeh_gridplot(self.p, self.pv)
         except Exception as e:
             raise e
+
+    def _set_buy_enter(self, buy_enter):
+        self.buy_enter = assert_numpy_elements(buy_enter)
+        self._set_dataframe()
+
+    def _set_buy_close(self, buy_close):
+        self.buy_close = assert_numpy_elements(buy_close)
+        self._set_dataframe()
+
+    def _set_sell_enter(self, sell_enter):
+        self.sell_enter = assert_numpy_elements(sell_enter)
+        self._set_dataframe()
+
+    def _set_sell_close(self, sell_close):
+        self.sell_close = assert_numpy_elements(sell_close)
+        self._set_dataframe()

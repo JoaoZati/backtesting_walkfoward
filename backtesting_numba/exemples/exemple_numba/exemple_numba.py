@@ -5,23 +5,15 @@ import os
 from backtesting_numba.fixtures import timeit
 import numpy as np
 
-try:
-    os.chdir('backtesting_numba/exemples/exemples_numba')
-except Exception:
-    pass
-
-path = '../../sample_data/AAPL.csv'
-df_aapl = pd.read_csv(path)
-dataclass_aapl = DataClass(df_aapl)
-
 
 @timeit
-def moving_avarange_df(data_class, n):
+def moving_avarange_df(data_class, n, m):
     df = data_class.dataframe.copy()
 
-    ma = np.array(df.close.rolling(n).mean())
+    ma_f = np.array(df.close.rolling(n).mean())
+    ma_s = np.array(df.close.rolling(m).mean())
 
-    return ma
+    return {'ma_fast': ma_f, 'ma_slow': ma_s}
 
 
 @njit
@@ -43,10 +35,19 @@ def moving_avarange_njit(data_class, X, Y):
     ma_X = move_avarange_njit(close, X)
     ma_Y = move_avarange_njit(close, Y)
 
-    return {f'ma_{X}': ma_X, f'ma_{Y}': ma_Y}
+    return {'ma_fast': ma_X, 'ma_slow': ma_Y}
 
 
 if __name__ == '__main__':
+    try:
+        os.chdir('backtesting_numba/exemples/exemples_numba')
+    except Exception:
+        pass
+
+    path = '../../sample_data/AAPL.csv'
+    df_aapl = pd.read_csv(path)
+    dataclass_aapl = DataClass(df_aapl)
+
     print(moving_avarange_df(dataclass_aapl, 20))
     print(moving_avarange_njit(dataclass_aapl, 20, 50))
     print(moving_avarange_njit(dataclass_aapl, 50, 120))

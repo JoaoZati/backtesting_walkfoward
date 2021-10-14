@@ -26,3 +26,17 @@ class Backtesting:
                 self.data_class.add_update_indicator(key, value)
         except Exception as e:
             raise e
+
+    def buy_enter(self, func, *args):
+        try:
+            buy_enter = func(self.data_class, *args)
+            self.data_class._set_buy_enter(buy_enter)
+        except Exception as e:
+            raise e
+
+    def buy_close(self, func, *args):
+        try:
+            buy_close = func(self.data_class, *args)
+            self.data_class._set_buy_close(buy_close)
+        except Exception as e:
+            raise e
