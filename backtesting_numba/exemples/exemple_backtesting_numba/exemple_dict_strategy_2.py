@@ -15,10 +15,14 @@ if __name__ == '__main__':
     def sell_enter(data_class):
         return [0, 6, 0, 6, 0]
 
-    backtesting.sell_enter(sell_enter)
+    def sell_close(data_class):
+        return [0, 0, 5.75, 0, 7.5]
 
-    backtesting.backtesting(timeit=True)
-    print(backtesting.data_class.dataframe)
+    backtesting.sell_enter(sell_enter)
+    backtesting.sell_close(sell_close)
+
+    # backtesting.backtesting(timeit=True)
+    # print(backtesting.data_class.dataframe)
 
     backtesting.backtesting(comission_enter=0.1, slippage_enter=0.1, sell_stop_loss=True, ssl_value=0.5, timeit=True)
     print(backtesting.data_class.dataframe)

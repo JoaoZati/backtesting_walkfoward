@@ -50,27 +50,28 @@ def backtesting_numba(
             if price_exit:
                 signal = 0
                 buy_exit_price[i] = price_exit
-                price_exit, stop_loss, trailing_stop, take_profit = [0]*4
+                price_exit, stop_loss, trailing_stop, take_profit = [0] * 4
                 continue
 
             if revert and se[i]:
                 signal = -1
                 buy_exit_price[i] = se[i] - (c_exit + s_exit)
-                sell_enter_price[i] = price_enter
-                if bsl:
-                    stop_loss = price_enter - bsl_value
-                    if bsl_atr:
-                        stop_loss = price_enter - bsl_value * atr[i - 1]
+                sell_enter_price[i] = se[i] - (c_exit + s_exit)
+                # sell_levels
+                if ssl:
+                    stop_loss = price_enter + ssl_value
+                    if ssl_atr:
+                        stop_loss = price_enter + bsl_value * atr[i - 1]
                 stop_loss_level[i] = stop_loss
-                if btp:
-                    take_profit = price_enter + btp_value
-                    if btp_atr:
-                        take_profit = price_enter + btp_value * atr[i - 1]
+                if stp:
+                    take_profit = price_enter - stp_value
+                    if stp_atr:
+                        take_profit = price_enter - stp_value * atr[i - 1]
                 take_profit_level[i] = take_profit
-                if bts:
-                    trailing_stop = price_enter - bts_value
-                    if bts_atr:
-                        trailing_stop = price_enter - bts_value * atr[i - 1]
+                if sts:
+                    trailing_stop = price_enter + sts_value
+                    if sts_atr:
+                        trailing_stop = price_enter + sts_value * atr[i - 1]
                 traling_stop_level[i] = trailing_stop
                 # sell_exit
                 if take_profit and take_profit >= lo[i]:
@@ -88,15 +89,67 @@ def backtesting_numba(
                 if price_exit:
                     signal = 0
                     sell_exit_price[i] = price_exit
-                    price_exit = stop_loss, trailing_stop, take_profit = [0]*4
+                    price_exit = stop_loss, trailing_stop, take_profit = [0] * 4
 
             short_long[i] = signal
+            continue
 
         if signal == -1:
-            sell_enter_price[i] = 0
-            sell_exit_price[i] = cl[i]
-            signal = 0
-            short_long[i] = signal
+            if take_profit and take_profit >= lo[i]:
+                price_exit = take_profit + (c_exit + s_exit)
+            if stop_loss and stop_loss <= hi[i]:
+                price_exit = stop_loss + (c_exit + s_exit)
+            if trailing_stop and trailing_stop <= hi[i]:
+                price_exit = take_profit + (c_exit + s_exit)
+            if (stop_loss and stop_loss <= hi[i]) and (trailing_stop and trailing_stop <= hi[i]):
+                price_exit = max(stop_loss, trailing_stop) + (c_exit + s_exit)
+            if sc[i] and sc[i] <= min(stop_loss, trailing_stop):
+                price_exit = sc[i] + (c_exit + s_exit)
+
+            if price_exit:
+                signal = 0
+                sell_exit_price[i] = price_exit
+                price_exit, stop_loss, trailing_stop, take_profit = [0] * 4
+                continue
+
+            if revert and be[i]:
+                signal = 1
+                sell_exit_price[i] = be[i] + (c_exit + s_exit)
+                buy_enter_price[i] = be[i] + (c_exit + s_exit)
+                # buy_levels
+                if bsl:
+                    stop_loss = price_enter - bsl_value
+                    if bsl_atr:
+                        stop_loss = price_enter - bsl_value * atr[i - 1]
+                stop_loss_level[i] = stop_loss
+                if btp:
+                    take_profit = price_enter + btp_value
+                    if btp_atr:
+                        take_profit = price_enter + btp_value * atr[i - 1]
+                take_profit_level[i] = take_profit
+                if bts:
+                    trailing_stop = price_enter - bts_value
+                    if bts_atr:
+                        trailing_stop = price_enter - bts_value * atr[i - 1]
+                traling_stop_level[i] = trailing_stop
+                # buy_exit
+                if take_profit and take_profit <= hi[i]:
+                    price_exit = take_profit - (c_exit + s_exit)
+                if bc[i]:
+                    price_exit = bc[i] - (c_exit + s_exit)
+                if (take_profit and take_profit <= hi[i]) and bc[i]:
+                    price_exit = min(bc[i], trailing_stop) - (c_exit + s_exit)
+                if stop_loss and stop_loss >= lo[i]:
+                    price_exit = stop_loss - (c_exit + s_exit)
+                if trailing_stop and trailing_stop >= lo[i]:
+                    price_exit = trailing_stop - (c_exit + s_exit)
+                if (stop_loss and stop_loss >= lo[i]) and (trailing_stop and trailing_stop >= lo[i]):
+                    price_exit = max(trailing_stop, stop_loss) - (c_exit + s_exit)
+                if price_exit:
+                    signal = 0
+                    buy_exit_price[i] = price_exit
+                    price_exit, stop_loss, trailing_stop, take_profit = [0] * 4
+                short_long[i] = signal
             continue
 
         if be[i] and se[i]:
@@ -138,7 +191,7 @@ def backtesting_numba(
             if price_exit:
                 signal = 0
                 buy_exit_price[i] = price_exit
-                price_exit, stop_loss, trailing_stop, take_profit = [0]*4
+                price_exit, stop_loss, trailing_stop, take_profit = [0] * 4
             short_long[i] = signal
 
         if se[i]:
@@ -177,7 +230,7 @@ def backtesting_numba(
             if price_exit:
                 signal = 0
                 sell_exit_price[i] = price_exit
-                price_exit = stop_loss, trailing_stop, take_profit = [0]*4
+                price_exit, stop_loss, trailing_stop, take_profit = [0] * 4
             short_long[i] = signal
 
     return short_long, buy_enter_price, sell_enter_price, buy_exit_price, sell_exit_price, \
