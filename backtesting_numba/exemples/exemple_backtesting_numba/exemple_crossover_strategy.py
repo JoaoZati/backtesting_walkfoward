@@ -4,7 +4,7 @@ from backtesting_numba.backtesting import Backtesting
 import backtesting_numba.sample_indicators as ind
 import backtesting_numba.sample_rules.buy_entry as ber
 import backtesting_numba.sample_rules.sell_entry as ser
-import os
+
 
 if __name__ == '__main__':
     try:

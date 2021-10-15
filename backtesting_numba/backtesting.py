@@ -1,6 +1,6 @@
 from backtesting_numba.data_class import DataClass
 import numpy as np
-from numba import njit, prange, jit
+from numba import njit, prange, jit # noqa
 import time
 
 
