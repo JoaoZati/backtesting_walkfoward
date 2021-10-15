@@ -23,4 +23,6 @@ if __name__ == '__main__':
     backtesting.buy_enter(ber.buy_enter_crossover, 'ma_fast', 'ma_slow')
     backtesting.sell_enter(ser.sell_enter_crossover, 'ma_fast', 'ma_slow')
 
-    backtesting.backtesting()
+    backtesting.backtesting(timeit=True)
+    backtesting.backtesting(timeit=True)
+    backtesting.backtesting(timeit=True)

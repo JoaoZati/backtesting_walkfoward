@@ -17,24 +17,28 @@ if __name__ == '__main__':
 
     backtesting = Backtesting(data_sample)
 
-    def buy_enter(data_class):
+    def sell_enter(data_class):
         return [0, 6, 0, 6, 0]
 
-    backtesting.buy_enter(buy_enter)
+    backtesting.sell_enter(sell_enter)
+
     backtesting.backtesting(timeit=True)
     print(backtesting.data_class.dataframe)
-    backtesting.backtesting(comission_enter=0.1, slippage_enter=0.1, buy_stop_loss=True, bsl_value=0.5, timeit=True)
+
+    backtesting.backtesting(comission_enter=0.1, slippage_enter=0.1, sell_stop_loss=True, ssl_value=0.5, timeit=True)
     print(backtesting.data_class.dataframe)
+
     backtesting.backtesting(
         comission_enter=0.1, slippage_enter=0.1,
-        buy_stop_loss=True, bsl_value=0.5,
-        buy_trailing_stop=True, bts_value=0.25,
+        sell_stop_loss=True, ssl_value=0.5,
+        sell_trailing_stop=True, sts_value=0.25,
         timeit=True,
     )
     print(backtesting.data_class.dataframe)
+
     backtesting.backtesting(
         comission_exit=0.05, slippage_exit=0.05,
-        buy_take_profit=True, btp_value=0.25,
+        sell_take_profit=True, stp_value=0.25,
         timeit=True,
     )
     print(backtesting.data_class.dataframe)

@@ -1,10 +1,10 @@
 from backtesting_numba.data_class import DataClass
 import numpy as np
-from numba import njit, prange
+from numba import njit, prange, jit
 import time
 
 
-@njit(parallel=True)
+# @njit(parallel=True, cache=True)
 def backtesting_numba(
         op, hi, lo, cl,
         be, bc,
@@ -31,6 +31,13 @@ def backtesting_numba(
     for i in prange(len(op)):
 
         if signal == 1:
+            enter_price[i] = 0
+            exit_price[i] = cl[i]
+            signal = 0
+            short_long[i] = signal
+            continue
+
+        if signal == -1:
             enter_price[i] = 0
             exit_price[i] = cl[i]
             signal = 0
@@ -67,24 +74,67 @@ def backtesting_numba(
             if (stop_loss and stop_loss >= lo[i]) or (trailing_stop and trailing_stop >= lo[i]):
                 exit_price[i] = price_exit
                 signal = 0
-                short_long[i] = signal
                 stop_loss, trailing_stop, take_profit = (0, 0, 0)
                 continue
                 # exit (take profit)
             if take_profit and take_profit <= hi[i]:
-                price_exit = take_profit - (c_enter + s_exit)
+                price_exit = take_profit - (c_exit + s_exit)
             if bc[i]:
-                price_exit = bc[i] - (c_enter + s_exit)
+                price_exit = bc[i] - (c_exit + s_exit)
             if (take_profit and take_profit <= hi[i]) and bc[i]:
-                price_exit = min(bc[i], trailing_stop) - (c_enter + s_exit)
+                price_exit = min(bc[i], trailing_stop) - (c_exit + s_exit)
             if (take_profit and take_profit <= hi[i]) or bc[i]:
                 exit_price[i] = price_exit
                 signal = 0
-                short_long[i] = signal
                 stop_loss, trailing_stop, take_profit = (0, 0, 0)
                 continue
             short_long[i] = signal
-            exit_price[i] = 0
+
+        if se[i]:
+            signal = -1
+            price_enter = se[i] - (c_enter + s_enter)
+            enter_price[i] = price_enter
+            # Buy_levels
+            if ssl:
+                stop_loss = price_enter + ssl_value
+                if ssl_atr:
+                    stop_loss = price_enter + bsl_value * atr[i - 1]
+            stop_loss_level[i] = stop_loss
+            if stp:
+                take_profit = price_enter - stp_value
+                if stp_atr:
+                    take_profit = price_enter - stp_value * atr[i - 1]
+            take_profit_level[i] = take_profit
+            if sts:
+                trailing_stop = price_enter + sts_value
+                if sts_atr:
+                    trailing_stop = price_enter + sts_value * atr[i - 1]
+            traling_stop_level[i] = trailing_stop
+            # exist: stop_loss
+            if stop_loss and stop_loss <= hi[i]:
+                price_exit = stop_loss + (c_exit + s_exit)
+            if trailing_stop and trailing_stop <= hi[i]:
+                price_exit = trailing_stop + (c_exit + s_exit)
+            if (stop_loss and stop_loss <= hi[i]) and (trailing_stop and trailing_stop <= hi[i]):
+                price_exit = min(trailing_stop, stop_loss) + (c_exit + s_exit)
+            if (stop_loss and stop_loss <= hi[i]) or (trailing_stop and trailing_stop <= hi[i]):
+                exit_price[i] = price_exit
+                signal = 0
+                stop_loss, trailing_stop, take_profit = (0, 0, 0)
+                continue
+                # exit (take profit)
+            if take_profit and take_profit >= lo[i]:
+                price_exit = take_profit + (c_exit + s_exit)
+            if sc[i]:
+                price_exit = sc[i] + (c_exit + s_exit)
+            if (take_profit and take_profit >= lo[i]) and sc[i]:
+                price_exit = max(sc[i], trailing_stop) - (c_exit + s_exit)
+            if (take_profit and take_profit <= hi[i]) or sc[i]:
+                exit_price[i] = price_exit
+                signal = 0
+                stop_loss, trailing_stop, take_profit = (0, 0, 0)
+                continue
+            short_long[i] = signal
 
     return short_long, enter_price, exit_price, stop_loss_level, take_profit_level, traling_stop_level
 
@@ -152,7 +202,9 @@ class Backtesting:
             sell_trailing_stop=False, sts_atr=False, sts_value=2,
             revert=False, signal=0,
             buy_close_last=False, sell_close_last=False,
+            timeit=False
     ):
+        time1 = time.time()
         len_data = len(self.data_class.dataframe)
 
         if self.data_class.buy_enter is None:
@@ -206,4 +258,6 @@ class Backtesting:
         for key, value in dict_indicators.items():
             self.data_class.add_update_indicator(key, value)
 
-        self.data_class
+        time2 = time.time()
+        if timeit:
+            print('function took {:.3f} ms'.format((time2 - time1) * 1000.0))
