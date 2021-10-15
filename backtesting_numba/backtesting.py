@@ -1,6 +1,6 @@
 from backtesting_numba.data_class import DataClass
 import numpy as np
-from numba import njit, prange, jit # noqa
+from numba import njit, prange, jit  # noqa
 import time
 
 
@@ -17,38 +17,96 @@ def backtesting_numba(
         stp, stp_atr, stp_value,
         sts, sts_atr, sts_value,
         revert, signal,
-        bc_last, sc_last,
         atr, atr_bool
 ):
     short_long = np.zeros(len(op))
-    enter_price = np.zeros(len(op))
-    exit_price = np.zeros(len(op))
+    buy_enter_price = np.zeros(len(op))
+    sell_enter_price = np.zeros(len(op))
+    buy_exit_price = np.zeros(len(op))
+    sell_exit_price = np.zeros(len(op))
     stop_loss_level = np.zeros(len(op))
     take_profit_level = np.zeros(len(op))
     traling_stop_level = np.zeros(len(op))
     stop_loss, take_profit, trailing_stop, price_enter, price_exit = [0] * 5
+    price_exit = 0
 
     for i in prange(len(op)):
 
+        if atr_bool and not atr[i]:
+            continue
+
         if signal == 1:
-            enter_price[i] = 0
-            exit_price[i] = cl[i]
+            if take_profit and take_profit <= hi[i]:
+                price_exit = take_profit - (c_exit + s_exit)
+            if stop_loss and stop_loss >= lo[i]:
+                price_exit = stop_loss - (c_exit + s_exit)
+            if trailing_stop and trailing_stop >= lo[i]:
+                price_exit = take_profit - (c_exit + s_exit)
+            if (stop_loss and stop_loss >= lo[i]) and (trailing_stop and trailing_stop >= lo[i]):
+                price_exit = max(stop_loss, trailing_stop) - (c_exit + s_exit)
+            if bc[i] and bc[i] >= max(stop_loss, trailing_stop):
+                price_exit = bc[i] - (c_exit + s_exit)
+
+            if price_exit:
+                signal = 0
+                buy_exit_price[i] = price_exit
+                price_exit, stop_loss, trailing_stop, take_profit = [0]*4
+                continue
+
+            if revert and se[i]:
+                signal = -1
+                buy_exit_price[i] = se[i] - (c_exit + s_exit)
+                sell_enter_price[i] = price_enter
+                if bsl:
+                    stop_loss = price_enter - bsl_value
+                    if bsl_atr:
+                        stop_loss = price_enter - bsl_value * atr[i - 1]
+                stop_loss_level[i] = stop_loss
+                if btp:
+                    take_profit = price_enter + btp_value
+                    if btp_atr:
+                        take_profit = price_enter + btp_value * atr[i - 1]
+                take_profit_level[i] = take_profit
+                if bts:
+                    trailing_stop = price_enter - bts_value
+                    if bts_atr:
+                        trailing_stop = price_enter - bts_value * atr[i - 1]
+                traling_stop_level[i] = trailing_stop
+                # sell_exit
+                if take_profit and take_profit >= lo[i]:
+                    price_exit = take_profit + (c_exit + s_exit)
+                if sc[i]:
+                    price_exit = sc[i] + (c_exit + s_exit)
+                if (take_profit and take_profit >= lo[i]) and sc[i]:
+                    price_exit = max(sc[i], trailing_stop) - (c_exit + s_exit)
+                if stop_loss and stop_loss <= hi[i]:
+                    price_exit = stop_loss + (c_exit + s_exit)
+                if trailing_stop and trailing_stop <= hi[i]:
+                    price_exit = trailing_stop + (c_exit + s_exit)
+                if (stop_loss and stop_loss <= hi[i]) and (trailing_stop and trailing_stop <= hi[i]):
+                    price_exit = min(trailing_stop, stop_loss) + (c_exit + s_exit)
+                if price_exit:
+                    signal = 0
+                    sell_exit_price[i] = price_exit
+                    price_exit = stop_loss, trailing_stop, take_profit = [0]*4
+
+            short_long[i] = signal
+
+        if signal == -1:
+            sell_enter_price[i] = 0
+            sell_exit_price[i] = cl[i]
             signal = 0
             short_long[i] = signal
             continue
 
-        if signal == -1:
-            enter_price[i] = 0
-            exit_price[i] = cl[i]
-            signal = 0
-            short_long[i] = signal
+        if be[i] and se[i]:
             continue
 
         if be[i]:
             signal = 1
             price_enter = be[i] + (c_enter + s_enter)
-            enter_price[i] = price_enter
-            # Buy_levels
+            buy_enter_price[i] = price_enter
+            # buy_levels
             if bsl:
                 stop_loss = price_enter - bsl_value
                 if bsl_atr:
@@ -64,37 +122,30 @@ def backtesting_numba(
                 if bts_atr:
                     trailing_stop = price_enter - bts_value * atr[i - 1]
             traling_stop_level[i] = trailing_stop
-            # exist: stop_loss
-            if stop_loss and stop_loss >= lo[i]:
-                price_exit = stop_loss - (c_exit + s_exit)
-            if trailing_stop and trailing_stop >= lo[i]:
-                price_exit = trailing_stop - (c_exit + s_exit)
-            if (stop_loss and stop_loss >= lo[i]) and (trailing_stop and trailing_stop >= lo[i]):
-                price_exit = max(trailing_stop, stop_loss) - (c_exit + s_exit)
-            if (stop_loss and stop_loss >= lo[i]) or (trailing_stop and trailing_stop >= lo[i]):
-                exit_price[i] = price_exit
-                signal = 0
-                stop_loss, trailing_stop, take_profit = (0, 0, 0)
-                continue
-                # exit (take profit)
+            # buy_exit
             if take_profit and take_profit <= hi[i]:
                 price_exit = take_profit - (c_exit + s_exit)
             if bc[i]:
                 price_exit = bc[i] - (c_exit + s_exit)
             if (take_profit and take_profit <= hi[i]) and bc[i]:
                 price_exit = min(bc[i], trailing_stop) - (c_exit + s_exit)
-            if (take_profit and take_profit <= hi[i]) or bc[i]:
-                exit_price[i] = price_exit
+            if stop_loss and stop_loss >= lo[i]:
+                price_exit = stop_loss - (c_exit + s_exit)
+            if trailing_stop and trailing_stop >= lo[i]:
+                price_exit = trailing_stop - (c_exit + s_exit)
+            if (stop_loss and stop_loss >= lo[i]) and (trailing_stop and trailing_stop >= lo[i]):
+                price_exit = max(trailing_stop, stop_loss) - (c_exit + s_exit)
+            if price_exit:
                 signal = 0
-                stop_loss, trailing_stop, take_profit = (0, 0, 0)
-                continue
+                buy_exit_price[i] = price_exit
+                price_exit, stop_loss, trailing_stop, take_profit = [0]*4
             short_long[i] = signal
 
         if se[i]:
             signal = -1
             price_enter = se[i] - (c_enter + s_enter)
-            enter_price[i] = price_enter
-            # Buy_levels
+            sell_enter_price[i] = price_enter
+            # sell_levels
             if ssl:
                 stop_loss = price_enter + ssl_value
                 if ssl_atr:
@@ -110,33 +161,27 @@ def backtesting_numba(
                 if sts_atr:
                     trailing_stop = price_enter + sts_value * atr[i - 1]
             traling_stop_level[i] = trailing_stop
-            # exist: stop_loss
-            if stop_loss and stop_loss <= hi[i]:
-                price_exit = stop_loss + (c_exit + s_exit)
-            if trailing_stop and trailing_stop <= hi[i]:
-                price_exit = trailing_stop + (c_exit + s_exit)
-            if (stop_loss and stop_loss <= hi[i]) and (trailing_stop and trailing_stop <= hi[i]):
-                price_exit = min(trailing_stop, stop_loss) + (c_exit + s_exit)
-            if (stop_loss and stop_loss <= hi[i]) or (trailing_stop and trailing_stop <= hi[i]):
-                exit_price[i] = price_exit
-                signal = 0
-                stop_loss, trailing_stop, take_profit = (0, 0, 0)
-                continue
-                # exit (take profit)
+            # sell_exit
             if take_profit and take_profit >= lo[i]:
                 price_exit = take_profit + (c_exit + s_exit)
             if sc[i]:
                 price_exit = sc[i] + (c_exit + s_exit)
             if (take_profit and take_profit >= lo[i]) and sc[i]:
                 price_exit = max(sc[i], trailing_stop) - (c_exit + s_exit)
-            if (take_profit and take_profit <= hi[i]) or sc[i]:
-                exit_price[i] = price_exit
+            if stop_loss and stop_loss <= hi[i]:
+                price_exit = stop_loss + (c_exit + s_exit)
+            if trailing_stop and trailing_stop <= hi[i]:
+                price_exit = trailing_stop + (c_exit + s_exit)
+            if (stop_loss and stop_loss <= hi[i]) and (trailing_stop and trailing_stop <= hi[i]):
+                price_exit = min(trailing_stop, stop_loss) + (c_exit + s_exit)
+            if price_exit:
                 signal = 0
-                stop_loss, trailing_stop, take_profit = (0, 0, 0)
-                continue
+                sell_exit_price[i] = price_exit
+                price_exit = stop_loss, trailing_stop, take_profit = [0]*4
             short_long[i] = signal
 
-    return short_long, enter_price, exit_price, stop_loss_level, take_profit_level, traling_stop_level
+    return short_long, buy_enter_price, sell_enter_price, buy_exit_price, sell_exit_price, \
+        stop_loss_level, take_profit_level, traling_stop_level
 
 
 class Backtesting:
@@ -201,7 +246,6 @@ class Backtesting:
             sell_take_profit=False, stp_atr=False, stp_value=2,
             sell_trailing_stop=False, sts_atr=False, sts_value=2,
             revert=False, signal=0,
-            buy_close_last=False, sell_close_last=False,
             timeit=False
     ):
         time1 = time.time()
@@ -242,7 +286,6 @@ class Backtesting:
                 sell_take_profit, stp_atr, stp_value,
                 sell_trailing_stop, sts_atr, sts_value,
                 revert, signal,
-                buy_close_last, sell_close_last,
                 avarange_true_range, atr_bool
             )
 
