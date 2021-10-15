@@ -273,7 +273,8 @@ class Backtesting:
 
             avarange_true_range = self.data_class.indicators['atr']
 
-        short_long, enter_price, exit_price, stop_loss_level, take_profit_level, traling_stop_level = \
+        short_long, buy_enter_price, sell_enter_price, buy_exit_price, sell_exit_price, \
+            stop_loss_level, take_profit_level, traling_stop_level = \
             backtesting_numba(
                 self.data_class.open, self.data_class.high, self.data_class.low, self.data_class.close,
                 self.data_class.buy_enter, self.data_class.buy_close,
@@ -291,8 +292,10 @@ class Backtesting:
 
         dict_indicators = {
             'short_long': short_long,
-            'enter_price': enter_price,
-            'exit_price': exit_price,
+            'buy_enter_price': buy_enter_price,
+            'buy_exit_price': buy_exit_price,
+            'sell_enter_price': sell_enter_price,
+            'sell_exit_price': sell_exit_price,
             'stop_loss_level': stop_loss_level,
             'take_profit_level': take_profit_level,
             'traling_stop_level': traling_stop_level,
