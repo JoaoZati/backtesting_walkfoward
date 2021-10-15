@@ -1,9 +1,7 @@
 from backtesting_numba.data_class import DataClass
 import numpy as np
-from numba import njit
-
-
-# import pandas as pd
+from numba import njit, prange
+import time
 
 
 @njit(parallel=True)
@@ -12,7 +10,7 @@ def backtesting_numba(
         be, bc,
         se, sc,
         c_enter, c_exit, s_enter, s_exit,
-        btl, bsl_atr, bsl_value,
+        bsl, bsl_atr, bsl_value,
         btp, btp_atr, btp_value,
         bts, bts_atr, bts_value,
         ssl, ssl_atr, ssl_value,
@@ -20,10 +18,73 @@ def backtesting_numba(
         sts, sts_atr, sts_value,
         revert, signal,
         bc_last, sc_last,
+        atr, atr_bool
 ):
+    short_long = np.zeros(len(op))
+    enter_price = np.zeros(len(op))
+    exit_price = np.zeros(len(op))
+    stop_loss_level = np.zeros(len(op))
+    take_profit_level = np.zeros(len(op))
+    traling_stop_level = np.zeros(len(op))
+    stop_loss, take_profit, trailing_stop, price_enter, price_exit = [0] * 5
 
-    short_long, enter_price, exit_price, stop_loss_level, take_profit_level, traling_stop_level = [np.zeros(len(op))]*6
-    stop_loss, take_profit, trailing_stop = [0]*3
+    for i in prange(len(op)):
+
+        if signal == 1:
+            enter_price[i] = 0
+            exit_price[i] = cl[i]
+            signal = 0
+            short_long[i] = signal
+            continue
+
+        if be[i]:
+            signal = 1
+            price_enter = be[i] + (c_enter + s_enter)
+            enter_price[i] = price_enter
+            # Buy_levels
+            if bsl:
+                stop_loss = price_enter - bsl_value
+                if bsl_atr:
+                    stop_loss = price_enter - bsl_value * atr[i - 1]
+            stop_loss_level[i] = stop_loss
+            if btp:
+                take_profit = price_enter + btp_value
+                if btp_atr:
+                    take_profit = price_enter + btp_value * atr[i - 1]
+            take_profit_level[i] = take_profit
+            if bts:
+                trailing_stop = price_enter - bts_value
+                if bts_atr:
+                    trailing_stop = price_enter - bts_value * atr[i - 1]
+            traling_stop_level[i] = trailing_stop
+            # exist: stop_loss
+            if stop_loss and stop_loss >= lo[i]:
+                price_exit = stop_loss - (c_exit + s_exit)
+            if trailing_stop and trailing_stop >= lo[i]:
+                price_exit = trailing_stop - (c_exit + s_exit)
+            if (stop_loss and stop_loss >= lo[i]) and (trailing_stop and trailing_stop >= lo[i]):
+                price_exit = max(trailing_stop, stop_loss) - (c_exit + s_exit)
+            if (stop_loss and stop_loss >= lo[i]) or (trailing_stop and trailing_stop >= lo[i]):
+                exit_price[i] = price_exit
+                signal = 0
+                short_long[i] = signal
+                stop_loss, trailing_stop, take_profit = (0, 0, 0)
+                continue
+                # exit (take profit)
+            if take_profit and take_profit <= hi[i]:
+                price_exit = take_profit - (c_enter + s_exit)
+            if bc[i]:
+                price_exit = bc[i] - (c_enter + s_exit)
+            if (take_profit and take_profit <= hi[i]) and bc[i]:
+                price_exit = min(bc[i], trailing_stop) - (c_enter + s_exit)
+            if (take_profit and take_profit <= hi[i]) or bc[i]:
+                exit_price[i] = price_exit
+                signal = 0
+                short_long[i] = signal
+                stop_loss, trailing_stop, take_profit = (0, 0, 0)
+                continue
+            short_long[i] = signal
+            exit_price[i] = 0
 
     return short_long, enter_price, exit_price, stop_loss_level, take_profit_level, traling_stop_level
 
@@ -83,12 +144,12 @@ class Backtesting:
     def backtesting(
             self,
             comission_enter=0, comission_exit=0, slippage_enter=0, slippage_exit=0,
-            buy_stop_loss=False, bsl_atr=True, bsl_value=2,
-            buy_take_profit=False, btp_atr=True, btp_value=2,
-            buy_trailing_stop=False, bts_atr=True, bts_value=2,
-            sell_stop_loss=False, ssl_atr=True, ssl_value=2,
-            sell_take_profit=False, stp_atr=True, stp_value=2,
-            sell_trailing_stop=False, sts_atr=True, sts_value=2,
+            buy_stop_loss=False, bsl_atr=False, bsl_value=2,
+            buy_take_profit=False, btp_atr=False, btp_value=2,
+            buy_trailing_stop=False, bts_atr=False, bts_value=2,
+            sell_stop_loss=False, ssl_atr=False, ssl_value=2,
+            sell_take_profit=False, stp_atr=False, stp_value=2,
+            sell_trailing_stop=False, sts_atr=False, sts_value=2,
             revert=False, signal=0,
             buy_close_last=False, sell_close_last=False,
     ):
@@ -106,6 +167,16 @@ class Backtesting:
         if self.data_class.sell_close is None:
             self.data_class.sell_close = np.zeros(len_data)
 
+        atr_bool = False
+        avarange_true_range = np.zeros(len_data)
+
+        if any([bsl_atr, btp_atr, bts_atr, ssl_atr, stp_atr, sts_atr]):
+            if 'atr' not in self.data_class.indicators.keys():
+                print('For use any atr=True please set a "atr" indicator in data_class')
+                raise ValueError
+
+            avarange_true_range = self.data_class.indicators['atr']
+
         short_long, enter_price, exit_price, stop_loss_level, take_profit_level, traling_stop_level = \
             backtesting_numba(
                 self.data_class.open, self.data_class.high, self.data_class.low, self.data_class.close,
@@ -120,4 +191,19 @@ class Backtesting:
                 sell_trailing_stop, sts_atr, sts_value,
                 revert, signal,
                 buy_close_last, sell_close_last,
+                avarange_true_range, atr_bool
             )
+
+        dict_indicators = {
+            'short_long': short_long,
+            'enter_price': enter_price,
+            'exit_price': exit_price,
+            'stop_loss_level': stop_loss_level,
+            'take_profit_level': take_profit_level,
+            'traling_stop_level': traling_stop_level,
+        }
+
+        for key, value in dict_indicators.items():
+            self.data_class.add_update_indicator(key, value)
+
+        self.data_class

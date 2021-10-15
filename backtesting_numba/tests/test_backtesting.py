@@ -88,3 +88,7 @@ def test_backtesting_sell_close(backtesting_entrys):
     backtesting_entrys.sell_close(scr.sell_close_after_x, 10)
 
     assert isinstance(backtesting_entrys.data_class.sell_close, np.ndarray)
+
+
+def test_backtesting_crossover_strategy(backtesting_entrys):
+    backtesting_entrys.backtesting()
