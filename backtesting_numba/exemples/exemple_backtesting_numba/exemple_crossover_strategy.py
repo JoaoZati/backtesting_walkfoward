@@ -2,8 +2,8 @@ import pandas as pd
 from backtesting_numba.data_class import DataClass
 from backtesting_numba.backtesting import Backtesting
 import backtesting_numba.sample_indicators as ind
-import backtesting_numba.sample_rules.buy_entry as ber
-import backtesting_numba.sample_rules.sell_entry as ser
+import backtesting_numba.sample_rules.buy_enter as ber
+import backtesting_numba.sample_rules.sell_enter as ser
 
 
 if __name__ == '__main__':

@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 import pytest
 import backtesting_numba.sample_indicators as ind
-import backtesting_numba.sample_rules.buy_entry as ber
-import backtesting_numba.sample_rules.sell_entry as ser
+import backtesting_numba.sample_rules.buy_enter as ber
+import backtesting_numba.sample_rules.sell_enter as ser
 import backtesting_numba.sample_rules.buy_close as bcr
 import backtesting_numba.sample_rules.sell_close as scr
 

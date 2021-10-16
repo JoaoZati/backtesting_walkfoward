@@ -4,7 +4,7 @@ from numba import njit, prange, jit  # noqa
 import time
 
 
-# @njit(parallel=True, cache=True)
+# @njit(cache=True)
 def backtesting_numba(
         op, hi, lo, cl,
         be, bc,
@@ -149,7 +149,7 @@ def backtesting_numba(
                     signal = 0
                     buy_exit_price[i] = price_exit
                     price_exit, stop_loss, trailing_stop, take_profit = [0] * 4
-                short_long[i] = signal
+            short_long[i] = signal
             continue
 
         if be[i] and se[i]:
