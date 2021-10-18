@@ -32,6 +32,9 @@ def backtesting_numba(
 
     for i in prange(len(op)):
 
+        if i == 670:
+            print(i)
+
         if atr_bool and not atr[i]:
             continue
 
@@ -121,8 +124,8 @@ def backtesting_numba(
             if trailing_stop and trailing_stop <= hi[i]:
                 price_exit = trailing_stop + (c_exit + s_exit)
             if (stop_loss and stop_loss <= hi[i]) and (trailing_stop and trailing_stop <= hi[i]):
-                price_exit = max(stop_loss, trailing_stop) + (c_exit + s_exit)
-            if sc[i] and sc[i] <= min(stop_loss, trailing_stop):
+                price_exit = min(stop_loss, trailing_stop) + (c_exit + s_exit)
+            if sc[i] and sc[i] <= max(stop_loss, trailing_stop):
                 price_exit = sc[i] + (c_exit + s_exit)
 
             if price_exit:
