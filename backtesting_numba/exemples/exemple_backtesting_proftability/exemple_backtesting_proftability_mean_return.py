@@ -4,6 +4,7 @@ import pandas as pd
 from backtesting_numba.backtesting import Backtesting
 import backtesting_numba.sample_indicators as bni
 from backtesting_numba.sample_rules import buy_enter, sell_enter
+from backtesting_numba.sample_kpi import mean_return
 
 if __name__ == '__main__':
     try:
@@ -24,8 +25,4 @@ if __name__ == '__main__':
 
     backtesting.backtesting(revert=True)
 
-    output = backtesting.results(silent=True)
-    df_kpi = backtesting.df_metrics
-
-    return_crossover_year = (output['return'] / 22) * 100
-    return_buyandhold_year = ((df_aapl.close.iloc[-1]/df_aapl.close.iloc[0] - 1) / 12) * 100
+    mean_return_kpi = mean_return(backtesting)

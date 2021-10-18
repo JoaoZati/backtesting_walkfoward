@@ -392,16 +392,16 @@ class Backtesting:
 
         self._bool_backtested = True
 
-    def _dataframe_metrics(self):
+    def _dataframe_metrics(self, silent=False):
         if not self._bool_backtested:
             print('Function should be backtested before to calculate the metrics')
             raise er.NotBacktested
 
-        self.df_metrics = df_metrics(self.data_class)
+        self.df_metrics = df_metrics(self.data_class, silent=silent)
 
-    def results(self):
+    def results(self, silent=False):
 
-        self._dataframe_metrics()
+        self._dataframe_metrics(silent=silent)
 
         self.df_metrics['return'] = np.where(
             self.df_metrics['short_long'] == 1,
