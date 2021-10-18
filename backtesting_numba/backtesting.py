@@ -26,7 +26,7 @@ def backtesting_numba(
     sell_exit_price = np.zeros(len(op))
     stop_loss_level = np.zeros(len(op))
     take_profit_level = np.zeros(len(op))
-    traling_stop_level = np.zeros(len(op))
+    trailing_stop_level = np.zeros(len(op))
     stop_loss, take_profit, trailing_stop, price_enter, price_exit = [0] * 5
     price_exit = 0
 
@@ -36,6 +36,15 @@ def backtesting_numba(
             continue
 
         if signal == 1:
+            if bts:
+                trailing_stop = max(trailing_stop, cl[i - 1] - bts_value * atr[i - 1])
+                if bts_atr:
+                    trailing_stop = max(trailing_stop, cl[i - 1] - bts_value * atr[i - 1])
+                trailing_stop_level[i] = trailing_stop
+
+            stop_loss_level[i] = stop_loss
+            take_profit_level[i] = take_profit
+
             if take_profit and take_profit <= hi[i]:
                 price_exit = take_profit - (c_exit + s_exit)
             if stop_loss and stop_loss >= lo[i]:
@@ -72,7 +81,7 @@ def backtesting_numba(
                     trailing_stop = price_enter + sts_value
                     if sts_atr:
                         trailing_stop = price_enter + sts_value * atr[i - 1]
-                traling_stop_level[i] = trailing_stop
+                trailing_stop_level[i] = trailing_stop
                 # sell_exit
                 if take_profit and take_profit >= lo[i]:
                     price_exit = take_profit + (c_exit + s_exit)
@@ -95,6 +104,14 @@ def backtesting_numba(
             continue
 
         if signal == -1:
+            if sts:
+                trailing_stop = min(trailing_stop, cl[i - 1] + bts_value * atr[i - 1])
+                if bts_atr:
+                    trailing_stop = min(trailing_stop, cl[i - 1] + bts_value * atr[i - 1])
+
+            stop_loss_level[i] = stop_loss
+            take_profit_level[i] = take_profit
+
             if take_profit and take_profit >= lo[i]:
                 price_exit = take_profit + (c_exit + s_exit)
             if stop_loss and stop_loss <= hi[i]:
@@ -131,7 +148,7 @@ def backtesting_numba(
                     trailing_stop = price_enter - bts_value
                     if bts_atr:
                         trailing_stop = price_enter - bts_value * atr[i - 1]
-                traling_stop_level[i] = trailing_stop
+                trailing_stop_level[i] = trailing_stop
                 # buy_exit
                 if take_profit and take_profit <= hi[i]:
                     price_exit = take_profit - (c_exit + s_exit)
@@ -174,7 +191,7 @@ def backtesting_numba(
                 trailing_stop = price_enter - bts_value
                 if bts_atr:
                     trailing_stop = price_enter - bts_value * atr[i - 1]
-            traling_stop_level[i] = trailing_stop
+            trailing_stop_level[i] = trailing_stop
             # buy_exit
             if take_profit and take_profit <= hi[i]:
                 price_exit = take_profit - (c_exit + s_exit)
@@ -213,7 +230,7 @@ def backtesting_numba(
                 trailing_stop = price_enter + sts_value
                 if sts_atr:
                     trailing_stop = price_enter + sts_value * atr[i - 1]
-            traling_stop_level[i] = trailing_stop
+            trailing_stop_level[i] = trailing_stop
             # sell_exit
             if take_profit and take_profit >= lo[i]:
                 price_exit = take_profit + (c_exit + s_exit)
@@ -234,7 +251,7 @@ def backtesting_numba(
             short_long[i] = signal
 
     return short_long, buy_enter_price, sell_enter_price, buy_exit_price, sell_exit_price, \
-        stop_loss_level, take_profit_level, traling_stop_level
+        stop_loss_level, take_profit_level, trailing_stop_level
 
 
 class Backtesting:
