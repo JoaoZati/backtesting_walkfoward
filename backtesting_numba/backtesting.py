@@ -32,9 +32,6 @@ def backtesting_numba(
 
     for i in prange(len(op)):
 
-        if i == 670:
-            print(i)
-
         if atr_bool and not atr[i]:
             continue
 
