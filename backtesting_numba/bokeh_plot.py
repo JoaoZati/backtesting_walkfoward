@@ -92,9 +92,10 @@ def bokeh_df(DF, title, volume=True):
 
 def bokeh_ohlcv_step(ohlcv, p, indicator, color='blue'):
     df = ohlcv.copy()
-    df.reset_index(inplace=True)
     seqs = np.arange(df.shape[0])
     df["seq"] = pd.Series(seqs)
+
+    df[indicator].replace(0, np.nan, inplace=True)
 
     p.step(df["seq"], df[indicator], line_width=1, color=color, mode="center")
 
@@ -103,9 +104,10 @@ def bokeh_ohlcv_step(ohlcv, p, indicator, color='blue'):
 
 def bokeh_ohlcv_line(ohlcv, p, indicator, color='blue'):
     df = ohlcv.copy()
-    df.reset_index(inplace=True)
     seqs = np.arange(df.shape[0])
     df["seq"] = pd.Series(seqs)
+
+    df[indicator].replace(0, np.nan, inplace=True)
 
     p.line(df["seq"], df[indicator], line_width=1, color=color)
 
@@ -114,9 +116,10 @@ def bokeh_ohlcv_line(ohlcv, p, indicator, color='blue'):
 
 def bokeh_ohlcv_circle(ohlcv, p, indicator, color='blue'):
     df = ohlcv.copy()
-    df.reset_index(inplace=True)
     seqs = np.arange(df.shape[0])
     df["seq"] = pd.Series(seqs)
+
+    df[indicator].replace(0, np.nan, inplace=True)
 
     p.circle(df["seq"], df[indicator], size=10, color=color)
 

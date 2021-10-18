@@ -31,6 +31,9 @@ def backtesting_numba(
     price_exit = 0
 
     for i in prange(len(op)):
+        if i == 2079:
+            print(i)
+            pass
 
         if atr_bool and not atr[i]:
             continue
@@ -64,8 +67,9 @@ def backtesting_numba(
 
             if revert and se[i]:
                 signal = -1
-                buy_exit_price[i] = se[i] - (c_exit + s_exit)
-                sell_enter_price[i] = se[i] - (c_exit + s_exit)
+                price_enter = se[i] - (c_exit + s_exit)
+                buy_exit_price[i] = price_enter
+                sell_enter_price[i] = price_enter
                 # sell_levels
                 if ssl:
                     stop_loss = price_enter + ssl_value
@@ -98,7 +102,7 @@ def backtesting_numba(
                 if price_exit:
                     signal = 0
                     sell_exit_price[i] = price_exit
-                    price_exit = stop_loss, trailing_stop, take_profit = [0] * 4
+                    price_exit, stop_loss, trailing_stop, take_profit = [0] * 4
 
             short_long[i] = signal
             continue
@@ -131,8 +135,9 @@ def backtesting_numba(
 
             if revert and be[i]:
                 signal = 1
-                sell_exit_price[i] = be[i] + (c_exit + s_exit)
-                buy_enter_price[i] = be[i] + (c_exit + s_exit)
+                price_enter = be[i] + (c_exit + s_exit)
+                sell_exit_price[i] = price_enter
+                buy_enter_price[i] = price_enter
                 # buy_levels
                 if bsl:
                     stop_loss = price_enter - bsl_value

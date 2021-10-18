@@ -18,12 +18,21 @@ if __name__ == '__main__':
 
     backtesting.indicator(bni.moving_avarange_df, 20, 'ma_20')
     backtesting.indicator(bni.moving_avarange_df, 200, 'ma_200')
+    backtesting.indicator(bni.atr, 2)
+
     backtesting.buy_enter(buy_enter.buy_enter_crossover, 'ma_20', 'ma_200')
     backtesting.sell_enter(sell_enter.sell_enter_crossover, 'ma_20', 'ma_200')
 
-    backtesting.backtesting(revert=True, timeit=True)
+    backtesting.backtesting(buy_stop_loss=True, bsl_atr=True, sell_stop_loss=True, ssl_atr=True,
+                            revert=True, timeit=True)
 
     backtesting.data_class.plot_bokeh_indicators(
         line_indicators={'ma_20': 'blue', 'ma_200': 'yellow'},
-        circle_indicators={'buy_enter_price': 'green', 'sell_enter_price': 'red'}
+        circle_indicators={
+            'buy_exit_price': 'orange', 'sell_exit_price': 'orange',
+            'buy_enter_price': 'green', 'sell_enter_price': 'red',
+        },
+        step_indicators={
+            'stop_loss_level': 'red',
+        }
     )
