@@ -31,9 +31,6 @@ def backtesting_numba(
     price_exit = 0
 
     for i in prange(len(op)):
-        if i == 2079:
-            print(i)
-            pass
 
         if atr_bool and not atr[i]:
             continue
@@ -53,7 +50,7 @@ def backtesting_numba(
             if stop_loss and stop_loss >= lo[i]:
                 price_exit = stop_loss - (c_exit + s_exit)
             if trailing_stop and trailing_stop >= lo[i]:
-                price_exit = take_profit - (c_exit + s_exit)
+                price_exit = trailing_stop - (c_exit + s_exit)
             if (stop_loss and stop_loss >= lo[i]) and (trailing_stop and trailing_stop >= lo[i]):
                 price_exit = max(stop_loss, trailing_stop) - (c_exit + s_exit)
             if bc[i] and bc[i] >= max(stop_loss, trailing_stop):
@@ -112,6 +109,7 @@ def backtesting_numba(
                 trailing_stop = min(trailing_stop, cl[i - 1] + bts_value * atr[i - 1])
                 if bts_atr:
                     trailing_stop = min(trailing_stop, cl[i - 1] + bts_value * atr[i - 1])
+                trailing_stop_level[i] = trailing_stop
 
             stop_loss_level[i] = stop_loss
             take_profit_level[i] = take_profit
@@ -121,7 +119,7 @@ def backtesting_numba(
             if stop_loss and stop_loss <= hi[i]:
                 price_exit = stop_loss + (c_exit + s_exit)
             if trailing_stop and trailing_stop <= hi[i]:
-                price_exit = take_profit + (c_exit + s_exit)
+                price_exit = trailing_stop + (c_exit + s_exit)
             if (stop_loss and stop_loss <= hi[i]) and (trailing_stop and trailing_stop <= hi[i]):
                 price_exit = max(stop_loss, trailing_stop) + (c_exit + s_exit)
             if sc[i] and sc[i] <= min(stop_loss, trailing_stop):
@@ -349,7 +347,7 @@ class Backtesting:
             avarange_true_range = self.data_class.indicators['atr']
 
         short_long, buy_enter_price, sell_enter_price, buy_exit_price, sell_exit_price, \
-            stop_loss_level, take_profit_level, traling_stop_level = \
+            stop_loss_level, take_profit_level, trailing_stop_level = \
             backtesting_numba(
                 self.data_class.open, self.data_class.high, self.data_class.low, self.data_class.close,
                 self.data_class.buy_enter, self.data_class.buy_close,
@@ -373,7 +371,7 @@ class Backtesting:
             'sell_exit_price': sell_exit_price,
             'stop_loss_level': stop_loss_level,
             'take_profit_level': take_profit_level,
-            'traling_stop_level': traling_stop_level,
+            'trailing_stop_level': trailing_stop_level,
         }
 
         for key, value in dict_indicators.items():
