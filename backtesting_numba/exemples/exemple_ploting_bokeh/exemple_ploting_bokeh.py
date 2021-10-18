@@ -8,7 +8,7 @@ try:
 except Exception:
     pass
 
-path = '../sample_data/AAPL.csv'
+path = '../../sample_data/AAPL.csv'
 df_aapl = pd.read_csv(path)
 
 p, pv = bk.bokeh_df(df_aapl, 'Apple')

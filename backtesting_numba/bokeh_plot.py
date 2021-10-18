@@ -6,21 +6,22 @@ import pandas as pd
 import numpy as np
 
 
-def bokeh_df(DF, title):
+def bokeh_df(DF, title, volume=True):
     df = DF.copy()
-    bool_volume = False
 
     seqs = np.arange(df.shape[0])
+    df['date'] = pd.to_datetime(df['date'])
+    df['date'] = df['date'].apply(lambda x: x.strftime('%y/%m/%d-%H:%M'))
     df["seq"] = pd.Series(seqs)
     df['mid'] = df.apply(lambda x: (x['open'] + x['close']) / 2, axis=1)
     df['height'] = df.apply(lambda x: abs(x['close'] - x['open'] if x['close'] != x['open'] else 0.001), axis=1)
 
-    try:
-        df['volume'] = np.where(df['volume'] == 0, 1, df['volume'])
-        df['mid vol'] = df.apply(lambda x: x['volume'] / 2, axis=1)
-        bool_volume = True
-    except Exception:
-        pass
+    if volume:
+        try:
+            df['volume'] = np.where(df['volume'] == 0, 1, df['volume'])
+            df['mid vol'] = df.apply(lambda x: x['volume'] / 2, axis=1)
+        except Exception:
+            pass
 
     df['high'] = np.where(df['high'] == df['close'], df['high'] + 0.001, df['high'])
     df['low'] = np.where(df['low'] == df['close'], df['low'] - 0.001, df['low'])
@@ -46,6 +47,19 @@ def bokeh_df(DF, title):
         ]
     )
 
+    if volume:
+        hover = HoverTool(
+            tooltips=[
+                ("date", "@date"),
+                ("seq", "@seq"),
+                ("open", "@open"),
+                ("high", "@high"),
+                ("low", "@low"),
+                ("close", "@close"),
+                ("volume", "@volume"),
+            ]
+        )
+
     TOOLS = [CrosshairTool(), PanTool(), WheelZoomTool(), ResetTool(), BoxZoomTool(), SaveTool(), hover]
 
     # Figure Bokeh #
@@ -61,48 +75,51 @@ def bokeh_df(DF, title):
     p.rect(x='seq', y='mid', width=w, height='height', fill_color="black", line_color="black", source=sourceDec)
     p.rect(x='seq', y='mid', width=w, height='height', fill_color="white", line_color="black", source=sourceInc)
 
+    if not volume:
+        p.plot_height = 600
+        return p
+
     # Figura volume #
     pv = figure(plot_width=1500, plot_height=200, tools=TOOLS, x_range=p.x_range)
     pv.xaxis.major_label_orientation = 0
     pv.grid.grid_line_alpha = 0.3
 
-    if bool_volume:
-        pv.rect(x='seq', y='mid vol', width=w, height='volume', fill_color="blue", line_color="blue", source=sourceDec)
-        pv.rect(x='seq', y='mid vol', width=w, height='volume', fill_color="white", line_color="blue", source=sourceInc)
+    pv.rect(x='seq', y='mid vol', width=w, height='volume', fill_color="blue", line_color="blue", source=sourceDec)
+    pv.rect(x='seq', y='mid vol', width=w, height='volume', fill_color="white", line_color="blue", source=sourceInc)
 
     return p, pv
 
 
-def bokeh_ohlcv_step(ohlcv, p, indicator, color):
-    # Need 'Stop_Level
+def bokeh_ohlcv_step(ohlcv, p, indicator, color='blue'):
     df = ohlcv.copy()
-    df.reset_index(inplace=True)
     seqs = np.arange(df.shape[0])
     df["seq"] = pd.Series(seqs)
+
+    df[indicator].replace(0, np.nan, inplace=True)
 
     p.step(df["seq"], df[indicator], line_width=1, color=color, mode="center")
 
     return p
 
 
-def bokeh_ohlcv_line(ohlcv, p, indicator, color):
-    # Need 'Stop_Level
+def bokeh_ohlcv_line(ohlcv, p, indicator, color='blue'):
     df = ohlcv.copy()
-    df.reset_index(inplace=True)
     seqs = np.arange(df.shape[0])
     df["seq"] = pd.Series(seqs)
+
+    df[indicator].replace(0, np.nan, inplace=True)
 
     p.line(df["seq"], df[indicator], line_width=1, color=color)
 
     return p
 
 
-def bokeh_ohlcv_circle(ohlcv, p, indicator, color):
-    # Need 'Stop_Level
+def bokeh_ohlcv_circle(ohlcv, p, indicator, color='blue'):
     df = ohlcv.copy()
-    df.reset_index(inplace=True)
     seqs = np.arange(df.shape[0])
     df["seq"] = pd.Series(seqs)
+
+    df[indicator].replace(0, np.nan, inplace=True)
 
     p.circle(df["seq"], df[indicator], size=10, color=color)
 

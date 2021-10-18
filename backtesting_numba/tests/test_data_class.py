@@ -78,6 +78,11 @@ data_sample_4 = {
 }
 
 
+@pytest.fixture
+def sample_data_class():
+    return DataClass(data_sample)
+
+
 @pytest.mark.parametrize(
     'data',
     [data_sample]
@@ -181,6 +186,17 @@ def test_dataclass_update_indicator(data_input):
     assert bool_assert
 
 
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_indicators]
+)
+def test_dataclass_indicators_len(data_input):
+    data = DataClass(data_input, with_indicators=True)
+    indicator = [50, 12.5]
+    with pytest.raises(ValueError):
+        data.add_update_indicator('ind', indicator)
+
+
 data_sample_indicators_2 = {
     'date': ['2021-04-01', '2021-04-02', '2021-04-03'],
     'open': [5.5, 6, 5.75],
@@ -243,3 +259,57 @@ def test_dataclass_plot_ohlcv_ok(data_input):
     with pytest.raises(er.NoVolumeInDataframe):
         data = MockDataClass(data_input)
         data.plot_bokeh_ohlcv()
+
+
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_volume]
+)
+def test_dataclass_delete_indicator(data_input):
+    data = DataClass(data_input, with_indicators=True)
+    data.delete_indicator('volume')
+    assert 'volume' not in data.dataframe.columns
+
+
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_volume]
+)
+def test_dataclass_delete_nostring(data_input):
+    with pytest.raises(ValueError):
+        data = DataClass(data_input)
+        data.delete_indicator(50)
+
+
+@pytest.mark.parametrize(
+    'data_input',
+    [data_sample_volume]
+)
+def test_dataclass_delete_noindicator(data_input):
+    with pytest.raises(ValueError):
+        data = DataClass(data_input)
+        data.delete_indicator('volume1')
+
+
+def test_buy_entry(sample_data_class):
+    entry = [0, 1, 0]
+    sample_data_class._set_buy_enter(entry)
+    assert sample_data_class.buy_enter[1]
+
+
+def test_buy_close(sample_data_class):
+    entry = [0, 1, 0]
+    sample_data_class._set_buy_close(entry)
+    assert sample_data_class.buy_close[1]
+
+
+def test_sell_close(sample_data_class):
+    entry = [0, 1, 0]
+    sample_data_class._set_sell_close(entry)
+    assert sample_data_class.sell_close[1]
+
+
+def test_sell_enter(sample_data_class):
+    entry = [0, 1, 0]
+    sample_data_class._set_sell_enter(entry)
+    assert sample_data_class.sell_enter[1]
