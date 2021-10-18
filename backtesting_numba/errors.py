@@ -20,3 +20,7 @@ class NotinList(Exception):
 
 class NoVolumeInDataframe(Exception):
     pass
+
+
+class NotBacktested(Exception):
+    pass

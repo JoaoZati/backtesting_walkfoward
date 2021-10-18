@@ -4,11 +4,10 @@ import pandas as pd
 from backtesting_numba.backtesting import Backtesting
 import backtesting_numba.sample_indicators as bni
 from backtesting_numba.sample_rules import buy_enter, sell_enter
-import backtesting_numba.sample_kpi as kpi
 
 if __name__ == '__main__':
     try:
-        os.chdir('backtesting_numba/exemples/exemple_backtesting_strategy')
+        os.chdir('backtesting_numba/exemples/exemple_backtesting_proftability')
         print('ok')
     except Exception:
         pass
@@ -25,4 +24,10 @@ if __name__ == '__main__':
 
     backtesting.backtesting(revert=True)
 
-    kpi_df = kpi.df_metrics(backtesting.data_class)
+    backtesting._dataframe_metrics()
+    df_metrics = backtesting.df_metrics
+    output = backtesting.results()
+    df_kpi = backtesting.df_metrics
+
+    return_crossover_year = (output['return'] / 22) * 100
+    return_buyandhold_year = ((df_aapl.close.iloc[-1]/df_aapl.close.iloc[0] - 1) / 12) * 100

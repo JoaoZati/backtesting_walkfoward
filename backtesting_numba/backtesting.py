@@ -1,4 +1,6 @@
 from backtesting_numba.data_class import DataClass
+from backtesting_numba.metrics_dataframe import df_metrics
+import backtesting_numba.errors as er
 import numpy as np
 from numba import njit, prange, jit  # noqa
 import time
@@ -259,6 +261,13 @@ def backtesting_numba(
 
 class Backtesting:
 
+    df_metrics = None
+    df_results = None
+    trades_result = None
+    return_result = None
+    winrate_result = None
+    _bool_backtested = False
+
     def __init__(self, data_class, index_date=False, with_indicators=False):
         """
         :param data_class: DataClass object
@@ -319,7 +328,7 @@ class Backtesting:
             sell_take_profit=False, stp_atr=False, stp_value=2,
             sell_trailing_stop=False, sts_atr=False, sts_value=2,
             revert=False, signal=0,
-            timeit=False
+            timeit=False,
     ):
         time1 = time.time()
         len_data = len(self.data_class.dataframe)
@@ -380,3 +389,34 @@ class Backtesting:
         time2 = time.time()
         if timeit:
             print('function took {:.3f} ms'.format((time2 - time1) * 1000.0))
+
+        self._bool_backtested = True
+
+    def _dataframe_metrics(self):
+        if not self._bool_backtested:
+            print('Function should be backtested before to calculate the metrics')
+            raise er.NotBacktested
+
+        self.df_metrics = df_metrics(self.data_class)
+
+    def results(self):
+
+        self._dataframe_metrics()
+
+        self.df_metrics['return'] = np.where(
+            self.df_metrics['short_long'] == 1,
+            self.df_metrics['exit_price'] / self.df_metrics['enter_price'] - 1,
+            self.df_metrics['enter_price'] / self.df_metrics['exit_price'] - 1
+        )
+
+        self.df_metrics['winrate'] = np.where(self.df_metrics['return'] > 0, 1, 0)
+
+        self.trades_result = len(self.df_metrics)
+        self.return_result = self.df_metrics['return'].sum()
+        self.winrate_result = self.df_metrics['winrate'].mean()
+
+        return {
+            'trades': self.trades_result,
+            'return': self.return_result,
+            'winrate': self.winrate_result
+        }
