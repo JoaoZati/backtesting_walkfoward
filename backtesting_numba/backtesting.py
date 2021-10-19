@@ -19,7 +19,7 @@ def backtesting_numba(
         stp, stp_atr, stp_value,
         sts, sts_atr, sts_value,
         revert, signal,
-        atr, atr_bool
+        atr, atr_bool, i_start=0
 ):
     short_long = np.zeros(len(op))
     buy_enter_price = np.zeros(len(op))
@@ -33,6 +33,9 @@ def backtesting_numba(
     price_exit = 0
 
     for i in prange(len(op)):
+
+        if i < i_start:
+            continue
 
         if atr_bool and not atr[i]:
             continue
@@ -328,7 +331,7 @@ class Backtesting:
             sell_take_profit=False, stp_atr=False, stp_value=2,
             sell_trailing_stop=False, sts_atr=False, sts_value=2,
             revert=False, signal=0,
-            timeit=False,
+            timeit=False, i_start=0
     ):
         time1 = time.time()
         len_data = len(self.data_class.dataframe)
@@ -369,7 +372,7 @@ class Backtesting:
                 sell_take_profit, stp_atr, stp_value,
                 sell_trailing_stop, sts_atr, sts_value,
                 revert, signal,
-                avarange_true_range, atr_bool
+                avarange_true_range, atr_bool, i_start=i_start,
             )
 
         dict_indicators = {

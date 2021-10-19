@@ -1,9 +1,25 @@
 from backtesting_numba.backtesting import Backtesting
+from backtesting_numba.metrics_dataframe import result_return
+from backtesting_numba.data_class import DataClass
 import types
+import numpy as np
+import pandas as pd
+
+
+def wf_dataframe_signal_iend(DF, i_stop_calc):
+    df = DF.copy()
+    sr_signal = np.array(df.short_long)
+
+    for i, signal in enumerate(sr_signal):
+        if i == i_stop_calc and signal == 0:
+            return 0, i_stop_calc
+        elif i > i_stop_calc and signal != sr_signal[i - 1]:
+            return signal, i
+
+    return sr_signal[-1], len(df)
 
 
 class WalkFoward:
-
     indicator_func = None
     inperiod = 0
     outperiod = 0
@@ -11,7 +27,7 @@ class WalkFoward:
     walkfoward_dataframe = None
 
     def __init__(
-            self, backtesting, inperiod, outperiod, indicator_main_function,
+            self, data, inperiod, outperiod, indicator_main_function=False,
             buy_enter_function=False, sell_enter_function=False, buy_exit_function=False, sell_exit_function=False,
             comission_enter=0, comission_exit=0, slippage_enter=0, slippage_exit=0,
             buy_stop_loss=False, bsl_atr=False, bsl_value=2,
@@ -21,43 +37,48 @@ class WalkFoward:
             sell_take_profit=False, stp_atr=False, stp_value=2,
             sell_trailing_stop=False, sts_atr=False, sts_value=2,
             revert=False, fitness_function=False,
+            data_index_date=False, data_with_indicators=False
     ):
 
-        if not isinstance(backtesting, Backtesting):
-            print('backtesting is not a Backtesting object')
-            raise ValueError
+        if not isinstance(data, DataClass):
+            try:
+                data_class = DataClass(data, index_date=data_index_date, with_indicators=data_with_indicators)
+            except Exception as e:
+                print('cold not convert data into DataClass, see DataClass documentation')
+                raise e
 
-        if not isinstance(indicator_main_function, types.FunctionType):
+        self.data_class = data_class
+
+        if indicator_main_function and not isinstance(indicator_main_function, types.FunctionType):
             print(f'indicator_main_function must be a function type, you insert a '
-                  f'{type(indicator_main_function)}')
+                  f'{type(indicator_main_function)} in {indicator_main_function}')
             raise ValueError
 
-        if not isinstance(buy_enter_function, types.FunctionType):
+        if buy_enter_function and not isinstance(buy_enter_function, types.FunctionType):
             print(f'indicator_main_function must be a function type, you insert a '
                   f'{type(buy_enter_function)}')
             raise ValueError
 
-        if not isinstance(sell_enter_function, types.FunctionType):
+        if sell_enter_function and not isinstance(sell_enter_function, types.FunctionType):
             print(f'indicator_main_function must be a function type, you insert a '
                   f'{type(sell_enter_function)}')
             raise ValueError
 
-        if not isinstance(sell_exit_function, types.FunctionType):
+        if sell_exit_function and not isinstance(sell_exit_function, types.FunctionType):
             print(f'indicator_main_function must be a function type, you insert a '
                   f'{type(sell_exit_function)}')
             raise ValueError
 
-        if not isinstance(buy_exit_function, types.FunctionType):
+        if buy_exit_function and not isinstance(buy_exit_function, types.FunctionType):
             print(f'indicator_main_function must be a function type, you insert a '
                   f'{type(buy_exit_function)}')
             raise ValueError
 
-        if not isinstance(fitness_function, types.FunctionType):
+        if fitness_function and not isinstance(fitness_function, types.FunctionType):
             print(f'indicator_main_function must be a function type, you insert a '
                   f'{type(fitness_function)}')
             raise ValueError
 
-        self.backtesting = backtesting
         self.inperiod = inperiod
         self.outperiod = outperiod
         self.indicator_main_function = indicator_main_function
@@ -65,7 +86,6 @@ class WalkFoward:
         self.sell_enter_function = sell_enter_function
         self.buy_exit_function = buy_exit_function
         self.sell_exit_function = sell_exit_function
-        self.fitness_function = fitness_function
         self.revert = revert
         self.sts_value = sts_value
         self.sts_atr = sts_atr
@@ -90,26 +110,14 @@ class WalkFoward:
         self.comission_exit = comission_exit
         self.comission_enter = comission_enter
 
-    def run_walkfoward(self, *args, **kwargs):
-        df = self.backtesting.data_class.dataframe.copy
+        self.fitness_function = fitness_function
+        if not fitness_function:
+            self.fitness_function = result_return
 
-        max_indicator_global = 0
-        for key, value in kwargs.items():
-            try:
-                iter(value)
-            except TypeError:
-                print(f'All values in **kwargs must be interable, the {key} value is not interable')
+    def run_walkfoward(self, x_list=[0], y_list=[0], z_list=[0], silent=False):
+        df = self.data_class.dataframe.copy()
 
-            for item in value:
-                if not isinstance(item, int):
-                    print(f'all kwargs in the function must be the type int, the the '
-                          f'key={key}, value={value}, item={item} you give is not int')
-                if item <= 0:
-                    print(f'all kwargs must be bigger than one the '
-                          f'key={key}, value={value}, item={item} you give is negative')
-                    raise ValueError
-
-                max_indicator_global = item if item > max_indicator_global else max_indicator_global
+        max_indicator_global = max(max(x_list), max(y_list), max(z_list))
 
         dc_indices = {}
 
@@ -118,11 +126,159 @@ class WalkFoward:
         out_end = len(df)
         n = 0
 
-        while in_start - max_indicator_global >= 0:
+        while in_start >= 0:
             dc_indices[n] = [in_start, out_start, out_end]
             n += 1
             in_start -= self.outperiod
             out_start -= self.outperiod
             out_end -= self.outperiod
 
-        return dc_indices
+        list_otimization = {}
+        for key, value in dc_indices.items():
+            i_final_otm = value[1]
+            i_initial_otm = max(0, value[0] - max_indicator_global)
+            if not silent:
+                print(f'optimization {key}, initial: {i_initial_otm} final: {i_final_otm}, values={value}')
+
+            parameter_fit = self.optimization(x_list, y_list, z_list, i_initial_otm, i_final_otm, silent=silent)
+
+            list_otimization[key] = parameter_fit
+
+        signal = 0
+        i_start_df = dc_indices[len(list_otimization)-1][1]
+        for n in reversed(range(len(list_otimization))):
+
+            x, y, z = list_otimization[n]
+
+            i_stop_calc = dc_indices[n][2]
+            if i_start_df >= i_stop_calc:
+                continue
+
+            max_indicator = max(list_otimization[n])
+            i_start_calc = max(0, i_start_df - max_indicator)
+
+            if not any(list_otimization[n]):
+                # implement empty backtesting (do nothing)
+                continue
+            else:
+                df_wf = self.backtesting(self.data_class.dataframe.iloc[i_start_calc:],
+                                         x, y, z, dataframe=True, signal=signal)
+                signal, i_end_df = wf_dataframe_signal_iend(df_wf, i_stop_calc)
+                df_wf['n'], df_wf['x'], df_wf['y'], df_wf['z'] = n, x, y, z
+
+            if n == len(list_otimization)-1:
+                df_final = df_wf.iloc[:i_end_df + 1]
+            else:
+                df_final = pd.concat([df_final, df_wf.iloc[i_start_df: i_end_df + 1]])
+
+            i_start_df = i_end_df + 1
+
+        return dc_indices, list_otimization, df_final
+
+    def optimization(self, x_list, y_list, z_list, i_initial_otm, i_final_otm, silent=False):
+        df = self.data_class.dataframe.copy()
+        df = df.iloc[i_initial_otm:i_final_otm]
+
+        i = 0
+        parameters_fit = []
+        list_fitness = []
+        for x in x_list:
+            for y in y_list:
+                for z in z_list:
+                    fitness = self.backtesting(df, x, y, z)
+                    list_fitness.append(fitness)
+                    if i == 0:
+                        best_fit = fitness
+                    i += 1
+                    if fitness >= best_fit:
+                        best_fit = max(best_fit, fitness)
+                        parameters_fit = [x, y, z]
+                    if not silent:
+                        print(f'best_fit={best_fit:.3f}, fitness={fitness:.3f}, i={i}, x={x}, y={y}, z={z}')
+
+        if not any(list_fitness):
+            return [0, 0, 0]
+
+        return parameters_fit
+
+    def backtesting(self, df, x, y, z, dataframe=False, signal=0):
+        back = Backtesting(df)
+
+        if self.indicator_main_function:
+            try:
+                back.indicator(self.indicator_main_function, x, y, z)
+            except TypeError:
+                try:
+                    back.indicator(self.indicator_main_function, x, y)
+                except TypeError:
+                    try:
+                        back.indicator(self.indicator_main_function, x)
+                    except TypeError:
+                        back.indicator(self.indicator_main_function)
+
+        if self.buy_enter_function:
+            try:
+                back.buy_enter(self.buy_enter_function, x, y, z)
+            except TypeError:
+                try:
+                    back.buy_enter(self.buy_enter_function, x, y)
+                except TypeError:
+                    try:
+                        back.buy_enter(self.buy_enter_function, x)
+                    except TypeError:
+                        back.buy_enter(self.buy_enter_function)
+
+        if self.buy_exit_function:
+            try:
+                back.buy_exit(self.buy_exit_function, x, y, z)
+            except TypeError:
+                try:
+                    back.buy_exit(self.buy_exit_function, x, y)
+                except TypeError:
+                    try:
+                        back.buy_exit(self.buy_exit_function, x)
+                    except TypeError:
+                        back.buy_exit(self.buy_exit_function)
+
+        if self.sell_enter_function:
+            try:
+                back.sell_enter(self.sell_enter_function, x, y, z)
+            except TypeError:
+                try:
+                    back.sell_enter(self.sell_enter_function, x, y)
+                except TypeError:
+                    try:
+                        back.sell_enter(self.sell_enter_function, x)
+                    except TypeError:
+                        back.sell_enter(self.sell_enter_function)
+
+        if self.sell_exit_function:
+            try:
+                back.sell_exit(self.sell_exit_function, x, y, z)
+            except TypeError:
+                try:
+                    back.sell_exit(self.sell_exit_function, x, y)
+                except TypeError:
+                    try:
+                        back.sell_exit(self.sell_exit_function, x)
+                    except TypeError:
+                        back.sell_exit(self.sell_exit_function)
+
+        back.backtesting(
+            comission_enter=self.comission_enter, comission_exit=self.comission_exit,
+            slippage_enter=self.slippage_enter, slippage_exit=self.slippage_exit,
+            buy_stop_loss=self.buy_stop_loss, bsl_atr=self.bsl_atr, bsl_value=self.bsl_value,
+            buy_take_profit=self.buy_take_profit, btp_atr=self.btp_atr, btp_value=self.btp_value,
+            buy_trailing_stop=self.buy_trailing_stop, bts_atr=self.bts_atr, bts_value=self.bts_value,
+            sell_stop_loss=self.sell_stop_loss, ssl_atr=self.ssl_atr, ssl_value=self.ssl_value,
+            sell_take_profit=self.sell_take_profit, stp_atr=self.stp_atr, stp_value=self.stp_value,
+            sell_trailing_stop=self.sell_trailing_stop, sts_atr=self.sts_atr, sts_value=self.sts_value,
+            revert=self.revert, signal=signal
+        )
+
+        back._dataframe_metrics(silent=True)
+
+        if dataframe:
+            return back.data_class.dataframe
+
+        return self.fitness_function(back.df_metrics)

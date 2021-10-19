@@ -15,10 +15,14 @@ def buy_enter_exit_df(df_input, silent=False):
         if not silent:
             print(f'Size of df_buy_enter_price is {len(df_buy_enter_price)} and Size of '
                   f'df_buy_exit_price is {len(df_buy_exit_price)}!')
-        if len(df_buy_enter_price) == len(df_buy_exit_price) + 1:
+        elif len(df_buy_enter_price) == len(df_buy_exit_price) + 1:
             if not silent:
                 print('deleting last db_buy_enter_price')
             df_buy_enter_price = df_buy_enter_price.iloc[:-1]
+        elif len(df_buy_enter_price) == len(df_buy_exit_price) - 1:
+            if not silent:
+                print('deleting first db_buy_exit_price')
+            df_buy_exit_price = df_buy_exit_price.iloc[1:]
         else:
             raise ValueError
 
@@ -50,10 +54,14 @@ def sell_enter_exit_df(df_input, silent=False):
         if not silent:
             print(f'Size of df_sell_enter_price is {len(df_sell_enter_price)} and Size of '
                   f'df_sell_exit_price is {len(df_sell_exit_price)}!')
-        if len(df_sell_enter_price) == len(df_sell_exit_price) + 1:
+        elif len(df_sell_enter_price) == len(df_sell_exit_price) + 1:
             if not silent:
                 print('deleting last db_sell_enter_price')
             df_sell_enter_price = df_sell_enter_price.iloc[:-1]
+        elif len(df_sell_enter_price) == len(df_sell_exit_price) - 1:
+            if not silent:
+                print('deleting first db_sell_exit_price')
+            df_sell_exit_price = df_sell_exit_price.iloc[1:]
         else:
             raise ValueError
 
@@ -72,7 +80,7 @@ def sell_enter_exit_df(df_input, silent=False):
     return df_sell
 
 
-def df_metrics(data_class, silent=False):
+def df_metrics(data_class, silent=True):
     df_buy = buy_enter_exit_df(data_class.dataframe, silent=silent)
     df_sell = sell_enter_exit_df(data_class.dataframe, silent=silent)
 
@@ -80,3 +88,15 @@ def df_metrics(data_class, silent=False):
     df_metrics.sort_values(by=['date_enter'], inplace=True)
 
     return df_metrics
+
+
+def result_return(df_metrics):
+    df = df_metrics.copy()
+
+    df['return'] = np.where(
+        df['short_long'] == 1,
+        df['exit_price'] / df['enter_price'] - 1,
+        df['enter_price'] / df['exit_price'] - 1
+    )
+
+    return df['return'].sum()
