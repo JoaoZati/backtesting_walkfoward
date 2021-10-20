@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from backtesting_numba.walkfoward import WalkFoward
+from backtesting_numba.data_class import DataClass
 import numpy as np
 
 
@@ -62,3 +63,10 @@ if __name__ == '__main__':
     result_walkfoward = walkfoward.run_walkfoward(x_list=[12, 20, 30], y_list=[100, 200, 300], z_list=[0])
 
     metrics_walkfoward = walkfoward.show_results()
+
+    data_wf = DataClass(result_walkfoward, with_indicators=True)
+    data_wf.plot_bokeh_indicators(
+        line_indicators={'ma_fast': 'blue', 'ma_slow': 'yellow'},
+        circle_indicators={'buy_enter_price': 'green', 'sell_enter_price': 'red'},
+        title='Walkfowad Crossover AAPL'
+    )
