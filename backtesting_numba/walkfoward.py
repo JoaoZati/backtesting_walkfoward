@@ -1,6 +1,7 @@
 from backtesting_numba.backtesting import Backtesting
 from backtesting_numba.metrics_dataframe import result_return
 from backtesting_numba.data_class import DataClass
+from backtesting_numba.metrics_dataframe import dataframe_metrics
 import types
 import numpy as np
 import pandas as pd
@@ -19,12 +20,25 @@ def wf_dataframe_signal_iend(DF, i_stop_calc):
     return sr_signal[-1], len(df)
 
 
+def empty_backtest(df, signal=0):
+    back = Backtesting(df)
+
+    back.backtesting(df, signal=signal)
+
+    return back.data_class.dataframe
+
+
 class WalkFoward:
     indicator_func = None
     inperiod = 0
     outperiod = 0
 
-    walkfoward_dataframe = None
+    df_final = None
+    df_metrics = None
+
+    trades_result = None
+    return_result = None
+    winrate_result = None
 
     def __init__(
             self, data, inperiod, outperiod, indicator_main_function=False,
@@ -145,35 +159,40 @@ class WalkFoward:
             list_otimization[key] = parameter_fit
 
         signal = 0
-        i_start_df = dc_indices[len(list_otimization)-1][1]
+        i_start_df = dc_indices[len(list_otimization) - 1][1]
         for n in reversed(range(len(list_otimization))):
 
             x, y, z = list_otimization[n]
+
+            if not silent:
+                print(f'final_result {n}, x={x}, y={y}, z={z}')
 
             i_stop_calc = dc_indices[n][2]
             if i_start_df >= i_stop_calc:
                 continue
 
-            max_indicator = max(list_otimization[n])
-            i_start_calc = max(0, i_start_df - max_indicator)
-
             if not any(list_otimization[n]):
-                # implement empty backtesting (do nothing)
-                continue
+                df_wf = empty_backtest(self.data_class.dataframe, signal=signal)
             else:
-                df_wf = self.backtesting(self.data_class.dataframe.iloc[i_start_calc:],
-                                         x, y, z, dataframe=True, signal=signal)
-                signal, i_end_df = wf_dataframe_signal_iend(df_wf, i_stop_calc)
-                df_wf['n'], df_wf['x'], df_wf['y'], df_wf['z'] = n, x, y, z
+                df_wf = self.backtesting(self.data_class.dataframe,
+                                         x, y, z, dataframe=True, signal=signal, i_start=i_start_df)
 
-            if n == len(list_otimization)-1:
+            signal, i_end_df = wf_dataframe_signal_iend(df_wf, i_stop_calc)
+            df_wf['n'], df_wf['x'], df_wf['y'], df_wf['z'] = n, x, y, z
+            for i in range(len(df_wf)):
+                if i < i_start_df:
+                    df_wf.iloc[i, -4:] = 0
+
+            if n == len(list_otimization) - 1:
                 df_final = df_wf.iloc[:i_end_df + 1]
             else:
                 df_final = pd.concat([df_final, df_wf.iloc[i_start_df: i_end_df + 1]])
 
             i_start_df = i_end_df + 1
 
-        return dc_indices, list_otimization, df_final
+        self.df_final = df_final
+
+        return df_final
 
     def optimization(self, x_list, y_list, z_list, i_initial_otm, i_final_otm, silent=False):
         df = self.data_class.dataframe.copy()
@@ -201,7 +220,7 @@ class WalkFoward:
 
         return parameters_fit
 
-    def backtesting(self, df, x, y, z, dataframe=False, signal=0):
+    def backtesting(self, df, x, y, z, dataframe=False, signal=0, i_start=0):
         back = Backtesting(df)
 
         if self.indicator_main_function:
@@ -273,7 +292,7 @@ class WalkFoward:
             sell_stop_loss=self.sell_stop_loss, ssl_atr=self.ssl_atr, ssl_value=self.ssl_value,
             sell_take_profit=self.sell_take_profit, stp_atr=self.stp_atr, stp_value=self.stp_value,
             sell_trailing_stop=self.sell_trailing_stop, sts_atr=self.sts_atr, sts_value=self.sts_value,
-            revert=self.revert, signal=signal
+            revert=self.revert, signal=signal, i_start=i_start,
         )
 
         back._dataframe_metrics(silent=True)
@@ -282,3 +301,28 @@ class WalkFoward:
             return back.data_class.dataframe
 
         return self.fitness_function(back.df_metrics)
+
+    def show_results(self):
+        if self.df_final is None:
+            print('df_final is None, run walkfoward test to create df_final')
+            raise ValueError
+
+        self.df_metrics = dataframe_metrics(self.df_final)
+
+        self.df_metrics['return'] = np.where(
+            self.df_metrics['short_long'] == 1,
+            self.df_metrics['exit_price'] / self.df_metrics['enter_price'] - 1,
+            self.df_metrics['enter_price'] / self.df_metrics['exit_price'] - 1
+        )
+
+        self.df_metrics['winrate'] = np.where(self.df_metrics['return'] > 0, 1, 0)
+
+        self.trades_result = len(self.df_metrics)
+        self.return_result = self.df_metrics['return'].sum()
+        self.winrate_result = self.df_metrics['winrate'].mean()
+
+        return {
+            'trades': self.trades_result,
+            'return': self.return_result,
+            'winrate': self.winrate_result
+        }

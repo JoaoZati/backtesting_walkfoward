@@ -1,8 +1,5 @@
 import os
 import pandas as pd
-from backtesting_numba.backtesting import Backtesting
-import backtesting_numba.sample_indicators as bni
-from backtesting_numba.sample_rules import buy_enter, sell_enter
 from backtesting_numba.walkfoward import WalkFoward
 import numpy as np
 
@@ -63,3 +60,5 @@ if __name__ == '__main__':
     )
 
     result_walkfoward = walkfoward.run_walkfoward(x_list=[12, 20, 30], y_list=[100, 200, 300], z_list=[0])
+
+    metrics_walkfoward = walkfoward.show_results()

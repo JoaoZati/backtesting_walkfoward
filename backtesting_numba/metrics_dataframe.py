@@ -90,6 +90,16 @@ def df_metrics(data_class, silent=True):
     return df_metrics
 
 
+def dataframe_metrics(dataframe, silent=True):
+    df_buy = buy_enter_exit_df(dataframe, silent=silent)
+    df_sell = sell_enter_exit_df(dataframe, silent=silent)
+
+    df_metrics = pd.concat([df_buy, df_sell])
+    df_metrics.sort_values(by=['date_enter'], inplace=True)
+
+    return df_metrics
+
+
 def result_return(df_metrics):
     df = df_metrics.copy()
 
