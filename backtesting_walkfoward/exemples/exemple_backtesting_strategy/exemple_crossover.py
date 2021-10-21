@@ -27,3 +27,5 @@ if __name__ == '__main__':
         line_indicators={'ma_20': 'blue', 'ma_200': 'yellow'},
         circle_indicators={'buy_enter_price': 'green', 'sell_enter_price': 'red'}
     )
+
+    metrics_results = backtesting.results()

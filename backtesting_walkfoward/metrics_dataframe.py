@@ -15,7 +15,7 @@ def buy_enter_exit_df(df_input, silent=False):
         if not silent:
             print(f'Size of df_buy_enter_price is {len(df_buy_enter_price)} and Size of '
                   f'df_buy_exit_price is {len(df_buy_exit_price)}!')
-        elif len(df_buy_enter_price) == len(df_buy_exit_price) + 1:
+        if len(df_buy_enter_price) == len(df_buy_exit_price) + 1:
             if not silent:
                 print('deleting last db_buy_enter_price')
             df_buy_enter_price = df_buy_enter_price.iloc[:-1]
@@ -54,7 +54,7 @@ def sell_enter_exit_df(df_input, silent=False):
         if not silent:
             print(f'Size of df_sell_enter_price is {len(df_sell_enter_price)} and Size of '
                   f'df_sell_exit_price is {len(df_sell_exit_price)}!')
-        elif len(df_sell_enter_price) == len(df_sell_exit_price) + 1:
+        if len(df_sell_enter_price) == len(df_sell_exit_price) + 1:
             if not silent:
                 print('deleting last db_sell_enter_price')
             df_sell_enter_price = df_sell_enter_price.iloc[:-1]

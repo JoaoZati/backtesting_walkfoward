@@ -11,6 +11,7 @@ numba = "*"
 yfinance = "*"
 alpha-vantage = "*"
 bokeh = "*"
+twine = "*"
 
 [dev-packages]
 flake8 = "*"
