@@ -683,10 +683,10 @@
         },
         "pkginfo": {
             "hashes": [
-                "sha256:37ecd857b47e5f55949c41ed061eb51a0bee97a87c969219d144c0e023982779",
-                "sha256:e7432f81d08adec7297633191bbf0bd47faf13cd8724c3a13250e51d542635bd"
+                "sha256:99d1775f3477508da299575567e4ffb678895912f51c7cbacd264d1815d11d19",
+                "sha256:afe3563b450fbeac7d4ef4835f8c29fc8ad77959e3f599d5ebc74c02fe51801e"
             ],
-            "version": "==1.7.1"
+            "version": "==1.8.0"
         },
         "prompt-toolkit": {
             "hashes": [
