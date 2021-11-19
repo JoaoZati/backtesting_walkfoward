@@ -51,7 +51,7 @@ backtesting = Backtesting(df_msft)
 backtesting.data_class.plot_bokeh_ohlc()
 ```
 
-#### 5. Create one indicators functions with data_class as first parameter (if your strategy use indicators).
+#### 5. Create one indicator function with data_class as first parameter (if your strategy use indicators).
 
 ```
 def moving_avarange(data_class, x, y):
@@ -62,13 +62,13 @@ def moving_avarange(data_class, x, y):
     return {'ma_fast': ma_fast, 'ma_slow': ma_slow}
 ```
 
-#### pass it backtesting object with x and y volue (pass values to indicators args, can make in indicator function how many args you want):
+#### pass the function to backtesting object with x and y values (pass values to indicators args, can make in indicator function how many args you want):
 
 ```
 backtesting.indicator(moving_avarange, 12, 200)
 ```
 
-#### 6. Create your logic entry and exits. Note you can create: Buy Enter, Buy Close, Sell Enter, Sell Close. For stop loss or trailing stop you dont need create a function. Its implemented in backtesting (see more later).
+#### 6. Create your logic entry and exits functions. Note you can create: Buy Enter, Buy Close, Sell Enter, Sell Close. For stop loss or trailing stop you dont need create a function. Its implemented in backtesting (see more later).
 ```
 def buy_enter_ma(data_class):
     mf = data_class.indicators['ma_fast']
@@ -110,21 +110,21 @@ backtesting.buy_enter(buy_enter_ma)
 backtesting.sell_enter(sell_enter_ma)
 ```
 
-#### 7. Now with data, indicator and logic rules all setup done you can run your backtestings;
+#### 7. Now with data, indicator and logic rules, all the setup is done, you can run your backtesting;
 
 ```
 backtesting.backtesting(revert=True)
 ```
 
-#### note 1: I run revert=True, it makes the backtesting close order and open a new order in inverse direction. Ex: In a candle the simulation are long, but a sell signal was made. It closes the long position and sell after that.
+#### note 1: I run revert=True here because I'm running a crossover strategy, revert=True makes the backtesting close order and open a new order in inverse direction when an inverse signal was made. Ex: If a candle in the simulation are long, but a sell signal was made. It closes the long position and sell after that.
 
-#### note 2: You can run sell_stop_loss=True, buy_stop_loss=True to set stop losses and set values with ssl_value=<value> and bsl_value=<value> respectively. 
+#### note 2: You can run sell_stop_loss=True, buy_stop_loss=True to set stop losses and set values with ssl_value={value} and bsl_value={value} respectively. 
 
 #### there are some other functions like set commissions and slipage fee. For more details see exemples.
 
 #### 8. You can see the results and the backtesting plot to see if the logic was implemented correctly:
 
-#### See metrics, it returns a dictionary with number of trades, total return and winrate:
+#### To see metrics just run code bellow, it returns a dictionary with number of trades, total return and winrate:
 
 ```
 metrics_results = backtesting.results()
