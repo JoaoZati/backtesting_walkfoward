@@ -690,11 +690,10 @@
         },
         "prompt-toolkit": {
             "hashes": [
-                "sha256:6076e46efae19b1e0ca1ec003ed37a933dc94b4d20f486235d436e64771dcd5c",
-                "sha256:eb71d5a6b72ce6db177af4a7d4d7085b99756bf656d98ffcc4fecd36850eea6c"
+                "sha256:45f3137a16a7bb5893928f918bfcc36cfe812db49437d087201cd2a78016cbb3",
+                "sha256:c79f8d3fe475116a2daaed1c5c08d4450becbe7b5c1a513d50b6d45248857a67"
             ],
-            "markers": "python_full_version >= '3.6.2'",
-            "version": "==3.0.20"
+            "version": "==3.0.25"
         },
         "ptyprocess": {
             "hashes": [
