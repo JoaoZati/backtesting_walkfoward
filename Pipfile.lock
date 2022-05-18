@@ -100,11 +100,10 @@
         },
         "bokeh": {
             "hashes": [
-                "sha256:b270d6ef899598fe26e64b6ae08e30f8d67a177baa1f5bfe18e1979a81bb7c4d",
-                "sha256:d0410717d743a0ac251e62480e2ea860a7341bdcd1dbe01499a904f233c90512"
+                "sha256:104d2f0a4ca7774ee4b11e545aa34ff76bf3e2ad6de0d33944361981b65da420",
+                "sha256:ef33801161af379665ab7a34684f2209861e3aefd5c803a21fbbb99d94874b03"
             ],
-            "index": "pypi",
-            "version": "==2.4.1"
+            "version": "==2.4.3"
         },
         "certifi": {
             "hashes": [
