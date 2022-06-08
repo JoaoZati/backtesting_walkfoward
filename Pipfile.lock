@@ -284,11 +284,10 @@
         },
         "keyring": {
             "hashes": [
-                "sha256:6334aee6073db2fb1f30892697b1730105b5e9a77ce7e61fca6b435225493efe",
-                "sha256:bd2145a237ed70c8ce72978b497619ddfcae640b6dcf494402d5143e37755c6e"
+                "sha256:372ff2fc43ab779e3f87911c26e6c7acc8bb440cbd82683e383ca37594cb0617",
+                "sha256:3ac00c26e4c93739e19103091a9986a9f79665a78cf15a4df1dba7ea9ac8da2f"
             ],
-            "markers": "python_version >= '3.6'",
-            "version": "==23.2.1"
+            "version": "==23.6.0"
         },
         "llvmlite": {
             "hashes": [
