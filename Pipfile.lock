@@ -1007,10 +1007,10 @@
         },
         "yfinance": {
             "hashes": [
-                "sha256:bde7ff6c04b7179881c15753460c600c4bd877dc9f33cdc98da68e7e1ebbc5a2"
+                "sha256:28f9a4e29bfd64a467f3b9fce7baeb8879bdd793fca88a80f2a5048fc08d381a",
+                "sha256:876d72ee9df1945cfc4be95e1fd7f34ece897f92925df022cb22f29951825c57"
             ],
-            "index": "pypi",
-            "version": "==0.1.64"
+            "version": "==0.1.72"
         },
         "zipp": {
             "hashes": [
