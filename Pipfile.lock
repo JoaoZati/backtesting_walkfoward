@@ -91,12 +91,8 @@
             "version": "==0.2.0"
         },
         "bleach": {
-            "hashes": [
-                "sha256:0900d8b37eba61a802ee40ac0061f8c2b5dee29c1927dd1d233e075ebf5a71da",
-                "sha256:4d2651ab93271d1129ac9cbc679f524565cc8a1b791909c4a51eac4446a15994"
-            ],
-            "markers": "python_version >= '3.6'",
-            "version": "==4.1.0"
+            "hashes": [],
+            "version": "==6.1.0"
         },
         "bokeh": {
             "hashes": [
