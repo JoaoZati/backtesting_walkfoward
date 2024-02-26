@@ -782,11 +782,8 @@
             "version": "==6.0"
         },
         "readme-renderer": {
-            "hashes": [
-                "sha256:3286806450d9961d6e3b5f8a59f77e61503799aca5155c8d8d40359b4e1e1adc",
-                "sha256:8299700d7a910c304072a7601eafada6712a5b011a20139417e1b1e9f04645d8"
-            ],
-            "version": "==30.0"
+            "hashes": [],
+            "version": "==43.0"
         },
         "requests": {
             "hashes": [
