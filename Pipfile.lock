@@ -275,12 +275,8 @@
             "version": "==0.7.1"
         },
         "jinja2": {
-            "hashes": [
-                "sha256:827a0e32839ab1600d4eb1c4c33ec5a8edfbc5cb42dafa13b81f182f97784b45",
-                "sha256:8569982d3f0889eed11dd620c706d39b60c36d6d25843961f33f77fb6bc6b20c"
-            ],
-            "markers": "python_version >= '3.6'",
-            "version": "==3.0.2"
+            "hashes": [],
+            "version": "==3.1.4"
         },
         "keyring": {
             "hashes": [
