@@ -60,12 +60,8 @@
             "version": "==3.7.4.post0"
         },
         "alpha-vantage": {
-            "hashes": [
-                "sha256:0ce76908c3e2a22f9bbdacead90195ec3a4fa41ef8ae7c69a4a2fc99459bfbec",
-                "sha256:5d05355febe6f0fafc4bd11dc6ce3504a02d9d3c105d60202539855c0f608661"
-            ],
-            "index": "pypi",
-            "version": "==2.3.1"
+            "hashes": [],
+            "version": "==3.0.0"
         },
         "async-timeout": {
             "hashes": [
